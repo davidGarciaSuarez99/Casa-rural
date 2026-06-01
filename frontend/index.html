@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>La Casa Baju — Casa Rural</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde:     #2d4a2d;
+      --verde-med: #4a7c4a;
+      --verde-cla: #8fbc8f;
+      --crema:     #f5f0e8;
+      --arena:     #e8dfc8;
+      --marron:    #6b4c2a;
+      --blanco:    #fdfbf7;
+      --texto:     #2a2a2a;
+      --gris:      #888;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--blanco);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      transition: background .4s, box-shadow .4s;
+    }
+    nav.scrolled {
+      background: rgba(253,251,247,.96);
+      box-shadow: 0 2px 20px rgba(0,0,0,.08);
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--blanco);
+      text-decoration: none;
+      transition: color .3s;
+    }
+    nav.scrolled .nav-logo { color: var(--verde); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: .85rem; font-weight: 500; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--blanco);
+      text-decoration: none; transition: color .3s;
+    }
+    nav.scrolled .nav-links a { color: var(--texto); }
+    .nav-links a:hover { color: var(--verde-cla) !important; }
+    .nav-btn {
+      background: var(--verde); color: #fff !important;
+      padding: .5rem 1.4rem; border-radius: 2px;
+      font-size: .8rem !important; letter-spacing: .15em;
+      transition: background .3s !important;
+    }
+    .nav-btn:hover { background: var(--verde-med) !important; }
+    nav.scrolled .nav-btn { background: var(--verde); color: #fff !important; }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh; min-height: 650px;
+      background: linear-gradient(160deg, #1a2e1a 0%, #2d4a2d 40%, #3d5c3d 100%);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 110%, rgba(143,188,143,.18) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c4a' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; z-index: 2; padding: 2rem; }
+    .hero-tag {
+      display: inline-block;
+      font-size: .72rem; letter-spacing: .3em; text-transform: uppercase;
+      color: var(--verde-cla); margin-bottom: 1.2rem;
+      border: 1px solid rgba(143,188,143,.4); padding: .35rem 1rem; border-radius: 2px;
+      animation: fadeDown .8s ease both;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: #fff; line-height: 1.05; margin-bottom: 1.2rem;
+      animation: fadeDown .8s .15s ease both;
+    }
+    .hero h1 em { color: var(--verde-cla); font-style: italic; }
+    .hero p {
+      font-size: 1.05rem; font-weight: 300; color: rgba(255,255,255,.75);
+      max-width: 480px; margin: 0 auto 2.5rem;
+      animation: fadeDown .8s .3s ease both;
+      line-height: 1.7;
+    }
+    .hero-btns {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeDown .8s .45s ease both;
+    }
+    .btn-primary {
+      background: var(--verde-cla); color: var(--verde);
+      padding: .85rem 2.2rem; border: none; border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .85rem;
+      font-weight: 500; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: background .3s, transform .2s;
+    }
+    .btn-primary:hover { background: #a8d4a8; transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: #fff;
+      padding: .85rem 2.2rem; border: 1px solid rgba(255,255,255,.4); border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .85rem;
+      font-weight: 500; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: border-color .3s, color .3s, transform .2s;
+    }
+    .btn-outline:hover { border-color: var(--verde-cla); color: var(--verde-cla); transform: translateY(-2px); }
+
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: .5rem;
+      color: rgba(255,255,255,.4); font-size: .7rem; letter-spacing: .2em;
+      text-transform: uppercase; animation: fadeDown .8s .6s ease both;
+    }
+    .hero-scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.4), transparent);
+      animation: scrollLine 2s ease infinite;
+    }
+
+    /* ── STATS BAR ── */
+    .stats {
+      background: var(--verde);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .stat {
+      padding: 2rem; text-align: center;
+      border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem; color: var(--verde-cla); display: block; margin-bottom: .2rem;
+    }
+    .stat-label {
+      font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+      color: rgba(255,255,255,.6);
+    }
+
+    /* ── SECCIONES ── */
+    .section { padding: 6rem 4rem; }
+    .section-tag {
+      font-size: .72rem; letter-spacing: .3em; text-transform: uppercase;
+      color: var(--verde-med); margin-bottom: .8rem; display: block;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--gris); max-width: 520px; line-height: 1.7;
+    }
+
+    /* ── ALOJAMIENTOS ── */
+    .alojamientos-section { background: var(--crema); }
+    .alojamientos-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;
+    }
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--blanco); border-radius: 4px;
+      overflow: hidden; transition: transform .3s, box-shadow .3s;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,.12); }
+    .card-img {
+      height: 200px;
+      background: linear-gradient(135deg, var(--verde) 0%, var(--verde-med) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; color: rgba(255,255,255,.3); position: relative; overflow: hidden;
+    }
+    .card-img-icon { font-size: 4rem; color: rgba(255,255,255,.2); }
+    .card-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--verde-cla); color: var(--verde);
+      font-size: .7rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; padding: .3rem .8rem; border-radius: 2px;
+    }
+    .card-body { padding: 1.5rem; }
+    .card-title {
+      font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: .5rem;
+    }
+    .card-desc { font-size: .9rem; color: var(--gris); line-height: 1.6; margin-bottom: 1rem; }
+    .card-meta {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem;
+    }
+    .card-meta span {
+      font-size: .8rem; color: var(--verde-med);
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--arena); padding-top: 1rem;
+    }
+    .card-price { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--verde); }
+    .card-price span { font-family: 'Jost', sans-serif; font-size: .75rem; color: var(--gris); }
+    .card-btn {
+      background: var(--verde); color: #fff;
+      padding: .5rem 1.2rem; border: none; border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .78rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: background .3s;
+    }
+    .card-btn:hover { background: var(--verde-med); }
+
+    /* ── SERVICIOS ── */
+    .servicios-section { background: var(--blanco); }
+    .servicios-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .servicio-item {
+      text-align: center; padding: 2rem 1.5rem;
+      border: 1px solid var(--arena); border-radius: 4px;
+      transition: border-color .3s, transform .3s;
+    }
+    .servicio-item:hover { border-color: var(--verde-cla); transform: translateY(-4px); }
+    .servicio-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--crema); display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; font-size: 1.4rem; color: var(--verde);
+    }
+    .servicio-nombre { font-weight: 500; margin-bottom: .3rem; }
+    .servicio-desc { font-size: .83rem; color: var(--gris); line-height: 1.5; }
+
+    /* ── ENTORNO ── */
+    .entorno-section {
+      background: var(--verde);
+      display: grid; grid-template-columns: 1fr 1fr; min-height: 500px;
+    }
+    .entorno-texto {
+      padding: 6rem 4rem; display: flex; flex-direction: column; justify-content: center;
+    }
+    .entorno-texto .section-tag { color: var(--verde-cla); }
+    .entorno-texto .section-title { color: #fff; }
+    .entorno-texto .section-sub { color: rgba(255,255,255,.65); max-width: 400px; }
+    .entorno-lista { margin-top: 2rem; display: flex; flex-direction: column; gap: .8rem; }
+    .entorno-lista li {
+      color: rgba(255,255,255,.8); font-size: .9rem; list-style: none;
+      display: flex; align-items: center; gap: .8rem;
+    }
+    .entorno-lista li i { color: var(--verde-cla); width: 16px; }
+    .entorno-mapa {
+      background: linear-gradient(135deg, #1a3d1a, #2d5a2d);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; color: rgba(255,255,255,.1);
+      position: relative; overflow: hidden;
+    }
+    .entorno-mapa::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(143,188,143,.15), transparent 70%);
+    }
+    .mapa-placeholder {
+      text-align: center; color: rgba(255,255,255,.3); z-index: 1;
+    }
+    .mapa-placeholder i { font-size: 4rem; display: block; margin-bottom: 1rem; }
+    .mapa-placeholder p { font-size: .85rem; letter-spacing: .1em; }
+
+    /* ── RESEÑAS ── */
+    .resenas-section { background: var(--crema); }
+    .resenas-header { text-align: center; margin-bottom: 3rem; }
+    .resenas-header .section-sub { margin: 0 auto; }
+    .resenas-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+    }
+    .resena-card {
+      background: var(--blanco); padding: 2rem; border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    .resena-stars { color: #f4b942; margin-bottom: 1rem; font-size: 1rem; }
+    .resena-texto {
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 1rem; line-height: 1.7; color: #444; margin-bottom: 1.5rem;
+    }
+    .resena-autor { display: flex; align-items: center; gap: .8rem; }
+    .resena-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--verde); display: flex; align-items: center;
+      justify-content: center; color: #fff; font-weight: 500; font-size: .9rem;
+    }
+    .resena-nombre { font-weight: 500; font-size: .9rem; }
+    .resena-fecha { font-size: .78rem; color: var(--gris); }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--marron);
+      padding: 6rem 4rem; text-align: center;
+    }
+    .cta-section .section-tag { color: rgba(255,255,255,.5); }
+    .cta-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem); color: #fff; margin-bottom: 1rem;
+    }
+    .cta-section p { color: rgba(255,255,255,.65); font-size: 1rem; margin-bottom: 2.5rem; line-height: 1.7; }
+
+    /* ── DISPONIBILIDAD WIDGET ── */
+    .disponibilidad {
+      background: var(--blanco);
+      padding: 3rem 4rem;
+      border-top: 1px solid var(--arena);
+    }
+    .dispon-form {
+      display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;
+      max-width: 900px; margin: 0 auto;
+    }
+    .dispon-group { flex: 1; min-width: 160px; }
+    .dispon-group label {
+      display: block; font-size: .72rem; letter-spacing: .15em;
+      text-transform: uppercase; color: var(--gris); margin-bottom: .5rem;
+    }
+    .dispon-group input, .dispon-group select {
+      width: 100%; padding: .75rem 1rem;
+      border: 1px solid var(--arena); border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .9rem;
+      background: var(--crema); color: var(--texto);
+      transition: border-color .3s;
+    }
+    .dispon-group input:focus, .dispon-group select:focus {
+      outline: none; border-color: var(--verde-cla);
+    }
+    .dispon-btn {
+      background: var(--verde); color: #fff; padding: .75rem 2rem;
+      border: none; border-radius: 2px; font-family: 'Jost', sans-serif;
+      font-size: .85rem; letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; transition: background .3s; white-space: nowrap;
+    }
+    .dispon-btn:hover { background: var(--verde-med); }
+    .dispon-result {
+      text-align: center; margin-top: 1rem; font-size: .9rem; display: none;
+    }
+    .disponible { color: var(--verde-med); }
+    .no-disponible { color: #c0392b; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #111; color: rgba(255,255,255,.6);
+      padding: 4rem; display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+    }
+    .footer-brand .nav-logo { color: #fff; font-size: 1.6rem; display: block; margin-bottom: 1rem; }
+    .footer-brand p { font-size: .85rem; line-height: 1.7; max-width: 260px; }
+    .footer-col h4 {
+      color: #fff; font-size: .75rem; letter-spacing: .2em;
+      text-transform: uppercase; margin-bottom: 1.2rem;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+    .footer-col a { color: rgba(255,255,255,.5); text-decoration: none; font-size: .85rem; transition: color .3s; }
+    .footer-col a:hover { color: var(--verde-cla); }
+    .footer-bottom {
+      background: #0a0a0a; padding: 1.2rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      color: rgba(255,255,255,.3); font-size: .78rem;
+    }
+
+    /* ── ANIMACIONES ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scrollLine {
+      0%   { transform: scaleY(0); transform-origin: top; }
+      50%  { transform: scaleY(1); transform-origin: top; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .section { padding: 4rem 1.5rem; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .entorno-section { grid-template-columns: 1fr; }
+      .entorno-mapa { min-height: 300px; }
+      footer { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; gap: .5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">La Casa Baju</a>
+  <ul class="nav-links">
+    <li><a href="#alojamientos">Alojamientos</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#entorno">Entorno</a></li>
+    <li><a href="resenas.html">Reseñas</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="reservas.html" class="nav-btn">Reservar</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-tag"><i class="fas fa-leaf"></i> &nbsp; Sierra de Asturias</span>
+    <h1>La Casa <em>Baju</em></h1>
+    <p>Un refugio entre robles y montañas. Descansa, desconecta y redescubre la naturaleza en nuestra casa rural.</p>
+    <div class="hero-btns">
+      <a href="reservas.html" class="btn-primary">Reservar ahora</a>
+      <a href="#alojamientos" class="btn-outline">Ver alojamientos</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- DISPONIBILIDAD -->
+<div class="disponibilidad">
+  <div class="dispon-form">
+    <div class="dispon-group">
+      <label><i class="fas fa-calendar-alt"></i> Llegada</label>
+      <input type="date" id="fechaEntrada" />
+    </div>
+    <div class="dispon-group">
+      <label><i class="fas fa-calendar-check"></i> Salida</label>
+      <input type="date" id="fechaSalida" />
+    </div>
+    <div class="dispon-group">
+      <label><i class="fas fa-users"></i> Personas</label>
+      <select id="personas">
+        <option value="1">1 persona</option>
+        <option value="2">2 personas</option>
+        <option value="4">4 personas</option>
+        <option value="6">6 personas</option>
+        <option value="10">10 personas</option>
+      </select>
+    </div>
+    <button class="dispon-btn" onclick="comprobarDisponibilidad()">
+      <i class="fas fa-search"></i> Comprobar
+    </button>
+  </div>
+  <div id="disponResult" class="dispon-result"></div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <span class="stat-num">15+</span>
+    <span class="stat-label">Años de experiencia</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">500+</span>
+    <span class="stat-label">Familias alojadas</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">4.9</span>
+    <span class="stat-label">Valoración media</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">3</span>
+    <span class="stat-label">Alojamientos</span>
+  </div>
+</div>
+
+<!-- ALOJAMIENTOS -->
+<section class="section alojamientos-section" id="alojamientos">
+  <div class="alojamientos-header reveal">
+    <div>
+      <span class="section-tag">Dónde dormir</span>
+      <h2 class="section-title">Nuestros alojamientos</h2>
+      <p class="section-sub">Elige el espacio que mejor se adapte a tu grupo, desde habitaciones dobles hasta la casa completa.</p>
+    </div>
+    <a href="reservas.html" class="btn-primary">Ver disponibilidad</a>
+  </div>
+  <div class="cards-grid" id="alojamientosGrid">
+    <!-- Se rellena con JS desde la API -->
+    <div class="card reveal">
+      <div class="card-img"><i class="fas fa-home card-img-icon"></i><span class="card-badge">Disponible</span></div>
+      <div class="card-body">
+        <h3 class="card-title">Cargando...</h3>
+        <p class="card-desc">Conectando con el servidor...</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="section servicios-section" id="servicios">
+  <div style="text-align:center; margin-bottom: 0;" class="reveal">
+    <span class="section-tag">Lo que ofrecemos</span>
+    <h2 class="section-title">Servicios incluidos</h2>
+    <p class="section-sub" style="margin: 0 auto;">Todo lo que necesitas para una estancia perfecta, sin sorpresas.</p>
+  </div>
+  <div class="servicios-grid" id="serviciosGrid">
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-wifi"></i></div>
+      <div class="servicio-nombre">WiFi gratuito</div>
+      <div class="servicio-desc">Alta velocidad en toda la casa</div>
+    </div>
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-parking"></i></div>
+      <div class="servicio-nombre">Parking privado</div>
+      <div class="servicio-desc">Plaza reservada para tu vehículo</div>
+    </div>
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-swimming-pool"></i></div>
+      <div class="servicio-nombre">Piscina exterior</div>
+      <div class="servicio-desc">Disponible en temporada de verano</div>
+    </div>
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-fire"></i></div>
+      <div class="servicio-nombre">Zona barbacoa</div>
+      <div class="servicio-desc">Equipada para reuniones al aire libre</div>
+    </div>
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-coffee"></i></div>
+      <div class="servicio-nombre">Desayuno</div>
+      <div class="servicio-desc">Casero y con productos locales</div>
+    </div>
+    <div class="servicio-item reveal">
+      <div class="servicio-icon"><i class="fas fa-baby"></i></div>
+      <div class="servicio-nombre">Cuna disponible</div>
+      <div class="servicio-desc">Bajo petición, sin coste adicional</div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTORNO -->
+<section class="entorno-section" id="entorno">
+  <div class="entorno-texto reveal">
+    <span class="section-tag">Naturaleza y aventura</span>
+    <h2 class="section-title">El entorno natural</h2>
+    <p class="section-sub">Rodeados de bosques, ríos y senderos. A pocos minutos de los pueblos más bonitos de la comarca.</p>
+    <ul class="entorno-lista">
+      <li><i class="fas fa-hiking"></i> Rutas de senderismo señalizadas desde la puerta</li>
+      <li><i class="fas fa-fish"></i> Pesca fluvial en el río cercano</li>
+      <li><i class="fas fa-bicycle"></i> Rutas en bicicleta de montaña</li>
+      <li><i class="fas fa-store"></i> Mercado artesanal los sábados</li>
+      <li><i class="fas fa-mountain"></i> Vistas panorámicas a la sierra</li>
+    </ul>
+  </div>
+  <div class="entorno-mapa">
+    <div class="mapa-placeholder">
+      <i class="fas fa-map-marked-alt"></i>
+      <p>Mapa interactivo<br>próximamente</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESEÑAS -->
+<section class="section resenas-section" id="resenas">
+  <div class="resenas-header reveal">
+    <span class="section-tag">Lo que dicen nuestros huéspedes</span>
+    <h2 class="section-title">Reseñas</h2>
+    <p class="section-sub">Opiniones reales de personas que ya se han alojado con nosotros.</p>
+  </div>
+  <div class="resenas-grid" id="resenasGrid">
+    <!-- Se rellena con JS desde la API -->
+    <div class="resena-card reveal">
+      <div class="resena-stars">★★★★★</div>
+      <p class="resena-texto">"Un lugar mágico para desconectar de la ciudad. La casa es preciosa y la zona es increíble."</p>
+      <div class="resena-autor">
+        <div class="resena-avatar">MG</div>
+        <div>
+          <div class="resena-nombre">María García</div>
+          <div class="resena-fecha">Agosto 2024</div>
+        </div>
+      </div>
+    </div>
+    <div class="resena-card reveal">
+      <div class="resena-stars">★★★★★</div>
+      <p class="resena-texto">"Repetiremos sin duda. La atención fue perfecta y las instalaciones impecables."</p>
+      <div class="resena-autor">
+        <div class="resena-avatar">JL</div>
+        <div>
+          <div class="resena-nombre">Juan López</div>
+          <div class="resena-fecha">Julio 2024</div>
+        </div>
+      </div>
+    </div>
+    <div class="resena-card reveal">
+      <div class="resena-stars">★★★★☆</div>
+      <p class="resena-texto">"Tranquilidad absoluta. El desayuno casero es una de las cosas que más nos gustó."</p>
+      <div class="resena-autor">
+        <div class="resena-avatar">AR</div>
+        <div>
+          <div class="resena-nombre">Ana Rodríguez</div>
+          <div class="resena-fecha">Junio 2024</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <span class="section-tag">¿A qué esperas?</span>
+  <h2>Reserva tu estancia</h2>
+  <p>Plazas limitadas. Asegura tu escapada rural antes de que se agoten.</p>
+  <a href="reservas.html" class="btn-primary">Comprobar disponibilidad</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <a href="index.html" class="nav-logo">La Casa Baju</a>
+    <p>Casa rural en plena naturaleza. Un espacio para el descanso y la desconexión familiar.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Alojamientos</h4>
+    <ul>
+      <li><a href="reservas.html">Casa Completa</a></li>
+      <li><a href="reservas.html">Habitación Roble</a></li>
+      <li><a href="reservas.html">Habitación Pino</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Información</h4>
+    <ul>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#entorno">Entorno</a></li>
+      <li><a href="resenas.html">Reseñas</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Contacto</h4>
+    <ul>
+      <li><a href="tel:+34600000000"><i class="fas fa-phone"></i> +34 600 000 000</a></li>
+      <li><a href="mailto:info@casabaju.com"><i class="fas fa-envelope"></i> info@casabaju.com</a></li>
+      <li><a href="#entorno"><i class="fas fa-map-marker-alt"></i> Asturias, España</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2025 La Casa Baju — Proyecto Final DAW</span>
+  <span>Diseñado por David García Suárez</span>
+</div>
+
+<script>
+const API = 'http://localhost:8080/api';
+
+// ── NAV scroll effect ──
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── Reveal on scroll ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Cargar alojamientos desde la API ──
+async function cargarAlojamientos() {
+  try {
+    const res = await fetch(`${API}/alojamientos`);
+    const datos = await res.json();
+    const grid = document.getElementById('alojamientosGrid');
+    const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
+    grid.innerHTML = datos.map((a, i) => `
+      <div class="card reveal">
+        <div class="card-img">
+          <i class="fas ${iconos[i] || 'fa-home'} card-img-icon"></i>
+          <span class="card-badge">Disponible</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">${a.nombre}</h3>
+          <p class="card-desc">${a.descripcion || ''}</p>
+          <div class="card-meta">
+            <span><i class="fas fa-users"></i> Hasta ${a.capacidad} personas</span>
+            <span><i class="fas fa-bed"></i> ${a.numCamas} cama${a.numCamas > 1 ? 's' : ''}</span>
+            ${a.metros2 ? `<span><i class="fas fa-vector-square"></i> ${a.metros2} m²</span>` : ''}
+          </div>
+          <div class="card-footer">
+            <div class="card-price">${a.precioNoche}€ <span>/ noche</span></div>
+            <a href="reservas.html?id=${a.id}" class="card-btn">Reservar</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  } catch (e) {
+    console.warn('API no disponible, mostrando datos de ejemplo');
+  }
+}
+
+// ── Cargar reseñas desde la API ──
+async function cargarResenas() {
+  try {
+    const res = await fetch(`${API}/resenas`);
+    const datos = await res.json();
+    if (datos.length === 0) return;
+    const grid = document.getElementById('resenasGrid');
+    grid.innerHTML = datos.slice(0, 3).map(r => {
+      const estrellas = '★'.repeat(r.puntuacion) + '☆'.repeat(5 - r.puntuacion);
+      const iniciales = r.usuario ? (r.usuario.nombre[0] + r.usuario.apellidos[0]) : 'HU';
+      const fecha = new Date(r.creadaEn).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      return `
+        <div class="resena-card reveal">
+          <div class="resena-stars">${estrellas}</div>
+          <p class="resena-texto">"${r.comentario}"</p>
+          <div class="resena-autor">
+            <div class="resena-avatar">${iniciales}</div>
+            <div>
+              <div class="resena-nombre">${r.usuario ? r.usuario.nombre : 'Huésped'}</div>
+              <div class="resena-fecha">${fecha}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  } catch (e) {
+    console.warn('No se pudieron cargar las reseñas de la API');
+  }
+}
+
+// ── Comprobar disponibilidad ──
+async function comprobarDisponibilidad() {
+  const entrada = document.getElementById('fechaEntrada').value;
+  const salida  = document.getElementById('fechaSalida').value;
+  const result  = document.getElementById('disponResult');
+
+  if (!entrada || !salida) {
+    result.style.display = 'block';
+    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> Por favor selecciona las fechas de entrada y salida.</span>';
+    return;
+  }
+  if (entrada >= salida) {
+    result.style.display = 'block';
+    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> La fecha de salida debe ser posterior a la de entrada.</span>';
+    return;
+  }
+
+  result.style.display = 'block';
+  result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
+
+  try {
+    const res = await fetch(`${API}/reservas/disponibilidad?alojamientoId=1&entrada=${entrada}&salida=${salida}`);
+    const disponible = await res.json();
+    result.innerHTML = disponible
+      ? `<span class="disponible"><i class="fas fa-check-circle"></i> ¡Hay disponibilidad para esas fechas! <a href="reservas.html?entrada=${entrada}&salida=${salida}" style="color:var(--verde-med); margin-left:.5rem;">Reservar ahora →</a></span>`
+      : `<span class="no-disponible"><i class="fas fa-times-circle"></i> Lo sentimos, esas fechas no están disponibles. Prueba con otras fechas.</span>`;
+  } catch(e) {
+    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-triangle"></i> No se pudo conectar con el servidor.</span>';
+  }
+}
+
+// Fechas mínimas (hoy)
+const hoy = new Date().toISOString().split('T')[0];
+document.getElementById('fechaEntrada').min = hoy;
+document.getElementById('fechaSalida').min = hoy;
+document.getElementById('fechaEntrada').addEventListener('change', e => {
+  document.getElementById('fechaSalida').min = e.target.value;
+});
+
+// Inicializar
+cargarAlojamientos();
+cargarResenas();
+</script>
+</body>
+</html>

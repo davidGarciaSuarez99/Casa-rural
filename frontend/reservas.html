@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservas — La Casa Baju</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde:     #2d4a2d;
+      --verde-med: #4a7c4a;
+      --verde-cla: #8fbc8f;
+      --crema:     #f5f0e8;
+      --arena:     #e8dfc8;
+      --marron:    #6b4c2a;
+      --blanco:    #fdfbf7;
+      --texto:     #2a2a2a;
+      --gris:      #888;
+      --error:     #c0392b;
+      --exito:     #27ae60;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; background: var(--blanco); color: var(--texto); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(253,251,247,.96);
+      box-shadow: 0 2px 20px rgba(0,0,0,.08);
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem;
+      color: var(--verde); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: .85rem; font-weight: 500; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--texto); text-decoration: none; transition: color .3s;
+    }
+    .nav-links a:hover { color: var(--verde); }
+    .nav-btn {
+      background: var(--verde); color: #fff !important;
+      padding: .5rem 1.4rem; border-radius: 2px;
+      font-size: .8rem !important; letter-spacing: .15em;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      background: linear-gradient(160deg, #1a2e1a 0%, #2d4a2d 100%);
+      padding: 10rem 4rem 5rem; text-align: center;
+    }
+    .page-header span {
+      font-size: .72rem; letter-spacing: .3em; text-transform: uppercase;
+      color: var(--verde-cla); display: block; margin-bottom: .8rem;
+    }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem); color: #fff; margin-bottom: 1rem;
+    }
+    .page-header p { color: rgba(255,255,255,.6); font-size: 1rem; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+    /* ── LAYOUT PRINCIPAL ── */
+    .reservas-layout {
+      display: grid; grid-template-columns: 1fr 380px;
+      gap: 3rem; max-width: 1200px; margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    /* ── PASOS ── */
+    .pasos {
+      display: flex; gap: 0; margin-bottom: 3rem;
+    }
+    .paso {
+      flex: 1; text-align: center; position: relative;
+    }
+    .paso::after {
+      content: ''; position: absolute; top: 20px; left: 50%; right: -50%;
+      height: 2px; background: var(--arena); z-index: 0;
+    }
+    .paso:last-child::after { display: none; }
+    .paso-num {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--arena); color: var(--gris);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: .9rem; margin: 0 auto .5rem;
+      position: relative; z-index: 1; transition: background .3s, color .3s;
+    }
+    .paso.activo .paso-num { background: var(--verde); color: #fff; }
+    .paso.completado .paso-num { background: var(--verde-cla); color: var(--verde); }
+    .paso-label {
+      font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--gris); transition: color .3s;
+    }
+    .paso.activo .paso-label { color: var(--verde); font-weight: 500; }
+
+    /* ── PANEL DE PASO ── */
+    .panel { display: none; }
+    .panel.activo { display: block; }
+
+    /* ── ALOJAMIENTOS SELECCIÓN ── */
+    .aloj-card {
+      border: 2px solid var(--arena); border-radius: 4px;
+      padding: 1.5rem; margin-bottom: 1rem; cursor: pointer;
+      display: grid; grid-template-columns: 80px 1fr auto;
+      gap: 1.2rem; align-items: center;
+      transition: border-color .3s, background .3s;
+    }
+    .aloj-card:hover { border-color: var(--verde-cla); background: var(--crema); }
+    .aloj-card.seleccionado { border-color: var(--verde); background: rgba(45,74,45,.04); }
+    .aloj-icon {
+      width: 80px; height: 80px; border-radius: 4px;
+      background: linear-gradient(135deg, var(--verde), var(--verde-med));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: rgba(255,255,255,.4);
+    }
+    .aloj-info h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: .3rem; }
+    .aloj-info p { font-size: .85rem; color: var(--gris); line-height: 1.5; margin-bottom: .5rem; }
+    .aloj-meta { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .aloj-meta span { font-size: .75rem; color: var(--verde-med); display: flex; align-items: center; gap: .3rem; }
+    .aloj-precio { text-align: right; white-space: nowrap; }
+    .aloj-precio strong { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--verde); display: block; }
+    .aloj-precio small { font-size: .75rem; color: var(--gris); }
+    .aloj-check {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 2px solid var(--arena); display: flex; align-items: center;
+      justify-content: center; color: transparent; margin-top: .5rem;
+      transition: all .3s; margin-left: auto;
+    }
+    .aloj-card.seleccionado .aloj-check {
+      background: var(--verde); border-color: var(--verde); color: #fff;
+    }
+
+    /* ── FORMULARIO ── */
+    .form-section { margin-bottom: 2rem; }
+    .form-section h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.2rem;
+      margin-bottom: 1.2rem; padding-bottom: .8rem;
+      border-bottom: 1px solid var(--arena);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gris);
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: .75rem 1rem; border: 1px solid var(--arena); border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .9rem;
+      background: var(--crema); color: var(--texto); transition: border-color .3s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--verde-cla);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-error { color: var(--error); font-size: .78rem; display: none; }
+
+    /* ── SERVICIOS EXTRA ── */
+    .servicios-extra { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: 1rem; }
+    .servicio-check {
+      display: flex; align-items: center; gap: .8rem;
+      padding: .8rem 1rem; border: 1px solid var(--arena); border-radius: 2px;
+      cursor: pointer; transition: border-color .3s, background .3s;
+    }
+    .servicio-check:hover { border-color: var(--verde-cla); background: var(--crema); }
+    .servicio-check input { display: none; }
+    .servicio-check.checked { border-color: var(--verde); background: rgba(45,74,45,.04); }
+    .servicio-check-icon { font-size: 1.1rem; color: var(--verde-med); width: 20px; }
+    .servicio-check-info { flex: 1; }
+    .servicio-check-nombre { font-size: .85rem; font-weight: 500; }
+    .servicio-check-precio { font-size: .75rem; color: var(--gris); }
+    .servicio-check-mark {
+      width: 18px; height: 18px; border-radius: 3px;
+      border: 2px solid var(--arena); display: flex; align-items: center;
+      justify-content: center; font-size: .7rem; color: transparent; transition: all .3s;
+    }
+    .servicio-check.checked .servicio-check-mark { background: var(--verde); border-color: var(--verde); color: #fff; }
+
+    /* ── BOTONES NAVEGACIÓN ── */
+    .btn-nav { display: flex; justify-content: space-between; margin-top: 2rem; gap: 1rem; }
+    .btn-primary {
+      background: var(--verde); color: #fff; padding: .85rem 2rem;
+      border: none; border-radius: 2px; font-family: 'Jost', sans-serif;
+      font-size: .85rem; font-weight: 500; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; transition: background .3s; text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--verde-med); }
+    .btn-secondary {
+      background: transparent; color: var(--texto); padding: .85rem 2rem;
+      border: 1px solid var(--arena); border-radius: 2px; font-family: 'Jost', sans-serif;
+      font-size: .85rem; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; transition: border-color .3s;
+    }
+    .btn-secondary:hover { border-color: var(--verde-cla); }
+
+    /* ── RESUMEN LATERAL ── */
+    .resumen {
+      position: sticky; top: 100px; height: fit-content;
+      background: var(--crema); border: 1px solid var(--arena); border-radius: 4px; overflow: hidden;
+    }
+    .resumen-header {
+      background: var(--verde); padding: 1.5rem; color: #fff;
+    }
+    .resumen-header h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: .3rem; }
+    .resumen-header p { font-size: .8rem; color: rgba(255,255,255,.6); }
+    .resumen-body { padding: 1.5rem; }
+    .resumen-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: .8rem 0; border-bottom: 1px solid var(--arena); font-size: .88rem;
+    }
+    .resumen-item:last-of-type { border-bottom: none; }
+    .resumen-item-label { color: var(--gris); }
+    .resumen-item-valor { font-weight: 500; text-align: right; }
+    .resumen-total {
+      background: var(--verde); color: #fff; padding: 1.2rem 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .resumen-total span { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+    .resumen-total strong { font-family: 'Playfair Display', serif; font-size: 1.6rem; }
+    .resumen-vacio {
+      text-align: center; padding: 2rem; color: var(--gris); font-size: .88rem; line-height: 1.7;
+    }
+    .resumen-vacio i { font-size: 2rem; display: block; margin-bottom: .8rem; opacity: .3; }
+
+    /* ── CONFIRMACIÓN ── */
+    .confirmacion {
+      text-align: center; padding: 4rem 2rem;
+    }
+    .confirmacion-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(39,174,96,.1); display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; color: var(--exito); margin: 0 auto 2rem;
+    }
+    .confirmacion h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem; }
+    .confirmacion p { color: var(--gris); line-height: 1.7; max-width: 400px; margin: 0 auto 2rem; }
+    .confirmacion-num {
+      background: var(--crema); border: 1px solid var(--arena);
+      border-radius: 4px; padding: 1rem 2rem; display: inline-block;
+      font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--verde);
+      margin-bottom: 2rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #111; color: rgba(255,255,255,.4);
+      padding: 2rem 4rem; text-align: center; font-size: .8rem;
+      margin-top: 4rem;
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .page-header { padding: 8rem 1.5rem 3rem; }
+      .reservas-layout { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+      .resumen { position: static; }
+      .form-grid { grid-template-columns: 1fr; }
+      .servicios-extra { grid-template-columns: 1fr; }
+      .aloj-card { grid-template-columns: 60px 1fr; }
+      .aloj-precio { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">La Casa Baju</a>
+  <ul class="nav-links">
+    <li><a href="index.html#alojamientos">Alojamientos</a></li>
+    <li><a href="index.html#servicios">Servicios</a></li>
+    <li><a href="index.html#entorno">Entorno</a></li>
+    <li><a href="resenas.html">Reseñas</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="reservas.html" class="nav-btn">Reservar</a></li>
+  </ul>
+</nav>
+
+<!-- HEADER -->
+<div class="page-header">
+  <span><i class="fas fa-calendar-alt"></i> &nbsp; Reservas online</span>
+  <h1>Reserva tu estancia</h1>
+  <p>Proceso sencillo en tres pasos. Confirmación inmediata por email.</p>
+</div>
+
+<!-- CONTENIDO -->
+<div class="reservas-layout">
+  <div>
+    <!-- PASOS -->
+    <div class="pasos">
+      <div class="paso activo" id="paso1">
+        <div class="paso-num">1</div>
+        <div class="paso-label">Alojamiento</div>
+      </div>
+      <div class="paso" id="paso2">
+        <div class="paso-num">2</div>
+        <div class="paso-label">Fechas y datos</div>
+      </div>
+      <div class="paso" id="paso3">
+        <div class="paso-num">3</div>
+        <div class="paso-label">Confirmación</div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: ELEGIR ALOJAMIENTO -->
+    <div class="panel activo" id="panel1">
+      <h2 style="font-family:'Playfair Display',serif; font-size:1.6rem; margin-bottom:1.5rem;">
+        ¿Qué alojamiento necesitas?
+      </h2>
+      <div id="listaAlojamientos">
+        <p style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Cargando alojamientos...</p>
+      </div>
+      <div class="btn-nav">
+        <span></span>
+        <button class="btn-primary" onclick="irPaso2()">
+          Continuar <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- PANEL 2: FECHAS Y DATOS -->
+    <div class="panel" id="panel2">
+      <h2 style="font-family:'Playfair Display',serif; font-size:1.6rem; margin-bottom:1.5rem;">
+        Fechas y datos personales
+      </h2>
+
+      <div class="form-section">
+        <h3><i class="fas fa-calendar-alt" style="color:var(--verde-cla);margin-right:.5rem"></i> Fechas de estancia</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Fecha de llegada *</label>
+            <input type="date" id="fechaEntrada" required />
+            <span class="form-error" id="errFechaEntrada">Selecciona la fecha de llegada</span>
+          </div>
+          <div class="form-group">
+            <label>Fecha de salida *</label>
+            <input type="date" id="fechaSalida" required />
+            <span class="form-error" id="errFechaSalida">Selecciona la fecha de salida</span>
+          </div>
+          <div class="form-group">
+            <label>Número de personas *</label>
+            <select id="numPersonas">
+              <option value="1">1 persona</option>
+              <option value="2">2 personas</option>
+              <option value="3">3 personas</option>
+              <option value="4">4 personas</option>
+              <option value="6">6 personas</option>
+              <option value="8">8 personas</option>
+              <option value="10">10 personas</option>
+            </select>
+          </div>
+          <div class="form-group" style="align-self:end">
+            <button class="btn-primary" onclick="comprobarDisponibilidad()" style="width:100%">
+              <i class="fas fa-search"></i> Comprobar disponibilidad
+            </button>
+          </div>
+        </div>
+        <div id="disponResult" style="margin-top:.8rem;font-size:.88rem;display:none;"></div>
+      </div>
+
+      <div class="form-section">
+        <h3><i class="fas fa-user" style="color:var(--verde-cla);margin-right:.5rem"></i> Datos personales</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" id="nombre" placeholder="Tu nombre" />
+            <span class="form-error" id="errNombre">Introduce tu nombre</span>
+          </div>
+          <div class="form-group">
+            <label>Apellidos *</label>
+            <input type="text" id="apellidos" placeholder="Tus apellidos" />
+            <span class="form-error" id="errApellidos">Introduce tus apellidos</span>
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="email" placeholder="tu@email.com" />
+            <span class="form-error" id="errEmail">Introduce un email válido</span>
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="telefono" placeholder="+34 600 000 000" />
+          </div>
+          <div class="form-group full">
+            <label>Notas o peticiones especiales</label>
+            <textarea id="notas" placeholder="Alergias, cuna para bebé, hora de llegada aproximada..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><i class="fas fa-concierge-bell" style="color:var(--verde-cla);margin-right:.5rem"></i> Servicios adicionales</h3>
+        <p style="font-size:.85rem;color:var(--gris);margin-bottom:.5rem;">Añade servicios extra a tu estancia (precio por noche).</p>
+        <div class="servicios-extra" id="serviciosExtra">
+          <!-- Se rellena con JS -->
+        </div>
+      </div>
+
+      <div class="btn-nav">
+        <button class="btn-secondary" onclick="irPaso1()">
+          <i class="fas fa-arrow-left"></i> Atrás
+        </button>
+        <button class="btn-primary" onclick="irPaso3()">
+          Confirmar reserva <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- PANEL 3: CONFIRMACIÓN -->
+    <div class="panel" id="panel3">
+      <div class="confirmacion">
+        <div class="confirmacion-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2>¡Reserva confirmada!</h2>
+        <p>Hemos recibido tu solicitud de reserva. En breve recibirás un email de confirmación con todos los detalles.</p>
+        <div class="confirmacion-num" id="numReserva">Reserva #---</div>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+          <a href="index.html" class="btn-secondary">Volver al inicio</a>
+          <a href="contacto.html" class="btn-primary">Contactar con nosotros</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESUMEN LATERAL -->
+  <div>
+    <div class="resumen">
+      <div class="resumen-header">
+        <h3>Resumen de tu reserva</h3>
+        <p>Se actualiza automáticamente</p>
+      </div>
+      <div class="resumen-body" id="resumenBody">
+        <div class="resumen-vacio">
+          <i class="fas fa-calendar-alt"></i>
+          Selecciona un alojamiento y las fechas para ver el resumen de tu reserva.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2025 La Casa Baju — Proyecto Final DAW · David García Suárez
+</footer>
+
+<script>
+const API = 'http://localhost:8080/api';
+
+let alojamientoSeleccionado = null;
+let serviciosSeleccionados = [];
+
+// ── Cargar alojamientos ──
+async function cargarAlojamientos() {
+  const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
+  try {
+    const res = await fetch(`${API}/alojamientos`);
+    const datos = await res.json();
+    document.getElementById('listaAlojamientos').innerHTML = datos.map((a, i) => `
+      <div class="aloj-card" onclick="seleccionarAlojamiento(this, ${JSON.stringify(a).replace(/"/g, '&quot;')})" data-id="${a.id}">
+        <div class="aloj-icon"><i class="fas ${iconos[i] || 'fa-home'}"></i></div>
+        <div class="aloj-info">
+          <h3>${a.nombre}</h3>
+          <p>${a.descripcion || ''}</p>
+          <div class="aloj-meta">
+            <span><i class="fas fa-users"></i> Hasta ${a.capacidad} personas</span>
+            <span><i class="fas fa-bed"></i> ${a.numCamas} cama${a.numCamas > 1 ? 's' : ''}</span>
+            ${a.metros2 ? `<span><i class="fas fa-vector-square"></i> ${a.metros2} m²</span>` : ''}
+          </div>
+        </div>
+        <div class="aloj-precio">
+          <strong>${a.precioNoche}€</strong>
+          <small>/ noche</small>
+          <div class="aloj-check"><i class="fas fa-check" style="font-size:.7rem"></i></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Si viene parámetro en la URL, preseleccionar
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    if (idParam) {
+      const card = document.querySelector(`.aloj-card[data-id="${idParam}"]`);
+      if (card) card.click();
+    }
+    // Fechas desde URL
+    if (params.get('entrada')) document.getElementById('fechaEntrada').value = params.get('entrada');
+    if (params.get('salida'))  document.getElementById('fechaSalida').value  = params.get('salida');
+
+  } catch(e) {
+    document.getElementById('listaAlojamientos').innerHTML = `
+      <p style="color:var(--error)"><i class="fas fa-exclamation-circle"></i> No se pudo conectar con el servidor. Asegúrate de que Spring Boot está arrancado.</p>`;
+  }
+}
+
+function seleccionarAlojamiento(el, aloj) {
+  document.querySelectorAll('.aloj-card').forEach(c => c.classList.remove('seleccionado'));
+  el.classList.add('seleccionado');
+  alojamientoSeleccionado = aloj;
+  actualizarResumen();
+}
+
+// ── Servicios extra ──
+const SERVICIOS = [
+  { id: 3, nombre: 'Desayuno', precio: 15, icono: 'fa-coffee' },
+  { id: 5, nombre: 'Barbacoa', precio: 10, icono: 'fa-fire' },
+  { id: 6, nombre: 'Cuna',     precio: 5,  icono: 'fa-baby' },
+];
+
+function cargarServicios() {
+  document.getElementById('serviciosExtra').innerHTML = SERVICIOS.map(s => `
+    <div class="servicio-check" onclick="toggleServicio(this, ${s.id}, ${s.precio})" data-id="${s.id}">
+      <i class="fas ${s.icono} servicio-check-icon"></i>
+      <div class="servicio-check-info">
+        <div class="servicio-check-nombre">${s.nombre}</div>
+        <div class="servicio-check-precio">+${s.precio}€ / noche</div>
+      </div>
+      <div class="servicio-check-mark"><i class="fas fa-check" style="font-size:.65rem"></i></div>
+    </div>
+  `).join('');
+}
+
+function toggleServicio(el, id, precio) {
+  el.classList.toggle('checked');
+  if (el.classList.contains('checked')) {
+    serviciosSeleccionados.push({ id, precio });
+  } else {
+    serviciosSeleccionados = serviciosSeleccionados.filter(s => s.id !== id);
+  }
+  actualizarResumen();
+}
+
+// ── Disponibilidad ──
+async function comprobarDisponibilidad() {
+  const entrada = document.getElementById('fechaEntrada').value;
+  const salida  = document.getElementById('fechaSalida').value;
+  const result  = document.getElementById('disponResult');
+
+  if (!alojamientoSeleccionado) {
+    result.style.display = 'block';
+    result.innerHTML = '<span style="color:var(--error)"><i class="fas fa-exclamation-circle"></i> Primero selecciona un alojamiento en el paso anterior.</span>';
+    return;
+  }
+  if (!entrada || !salida || entrada >= salida) {
+    result.style.display = 'block';
+    result.innerHTML = '<span style="color:var(--error)"><i class="fas fa-exclamation-circle"></i> Selecciona fechas válidas.</span>';
+    return;
+  }
+
+  result.style.display = 'block';
+  result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
+
+  try {
+    const res = await fetch(`${API}/reservas/disponibilidad?alojamientoId=${alojamientoSeleccionado.id}&entrada=${entrada}&salida=${salida}`);
+    const disponible = await res.json();
+    result.innerHTML = disponible
+      ? `<span style="color:var(--exito)"><i class="fas fa-check-circle"></i> ¡Disponible para esas fechas!</span>`
+      : `<span style="color:var(--error)"><i class="fas fa-times-circle"></i> No disponible. Prueba con otras fechas.</span>`;
+    actualizarResumen();
+  } catch(e) {
+    result.innerHTML = '<span style="color:var(--error)">Error al conectar con el servidor.</span>';
+  }
+}
+
+// ── Resumen lateral ──
+function actualizarResumen() {
+  const entrada = document.getElementById('fechaEntrada')?.value;
+  const salida  = document.getElementById('fechaSalida')?.value;
+  const body    = document.getElementById('resumenBody');
+
+  if (!alojamientoSeleccionado) {
+    body.innerHTML = `<div class="resumen-vacio"><i class="fas fa-calendar-alt"></i>Selecciona un alojamiento y las fechas para ver el resumen.</div>`;
+    return;
+  }
+
+  let noches = 0;
+  let precioBase = 0;
+  let precioServicios = 0;
+
+  if (entrada && salida && entrada < salida) {
+    const d1 = new Date(entrada), d2 = new Date(salida);
+    noches = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    precioBase = noches * alojamientoSeleccionado.precioNoche;
+    precioServicios = noches * serviciosSeleccionados.reduce((sum, s) => sum + s.precio, 0);
+  }
+
+  const total = precioBase + precioServicios;
+
+  body.innerHTML = `
+    <div class="resumen-item">
+      <span class="resumen-item-label">Alojamiento</span>
+      <span class="resumen-item-valor">${alojamientoSeleccionado.nombre}</span>
+    </div>
+    ${entrada ? `<div class="resumen-item">
+      <span class="resumen-item-label">Llegada</span>
+      <span class="resumen-item-valor">${new Date(entrada + 'T00:00').toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'})}</span>
+    </div>` : ''}
+    ${salida ? `<div class="resumen-item">
+      <span class="resumen-item-label">Salida</span>
+      <span class="resumen-item-valor">${new Date(salida + 'T00:00').toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'})}</span>
+    </div>` : ''}
+    ${noches > 0 ? `<div class="resumen-item">
+      <span class="resumen-item-label">Noches</span>
+      <span class="resumen-item-valor">${noches}</span>
+    </div>
+    <div class="resumen-item">
+      <span class="resumen-item-label">Alojamiento</span>
+      <span class="resumen-item-valor">${precioBase.toFixed(2)}€</span>
+    </div>` : ''}
+    ${precioServicios > 0 ? `<div class="resumen-item">
+      <span class="resumen-item-label">Servicios extra</span>
+      <span class="resumen-item-valor">+${precioServicios.toFixed(2)}€</span>
+    </div>` : ''}
+  `;
+
+  if (total > 0) {
+    body.innerHTML += `
+      <div class="resumen-total" style="margin: 1rem -1.5rem -1.5rem; padding: 1.2rem 1.5rem;">
+        <span>Total estimado</span>
+        <strong>${total.toFixed(2)}€</strong>
+      </div>`;
+  }
+}
+
+// ── Navegación entre pasos ──
+function irPaso2() {
+  if (!alojamientoSeleccionado) {
+    alert('Por favor selecciona un alojamiento antes de continuar.');
+    return;
+  }
+  cambiarPaso(1, 2);
+}
+
+function irPaso1() { cambiarPaso(2, 1); }
+
+async function irPaso3() {
+  if (!validarFormulario()) return;
+  await enviarReserva();
+}
+
+function cambiarPaso(de, a) {
+  document.getElementById(`panel${de}`).classList.remove('activo');
+  document.getElementById(`panel${a}`).classList.add('activo');
+  document.getElementById(`paso${de}`).classList.remove('activo');
+  document.getElementById(`paso${de}`).classList.add('completado');
+  document.getElementById(`paso${a}`).classList.add('activo');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Validación ──
+function validarFormulario() {
+  let ok = true;
+  const campos = [
+    { id: 'fechaEntrada', errId: 'errFechaEntrada' },
+    { id: 'fechaSalida',  errId: 'errFechaSalida'  },
+    { id: 'nombre',       errId: 'errNombre'        },
+    { id: 'apellidos',    errId: 'errApellidos'     },
+    { id: 'email',        errId: 'errEmail'         },
+  ];
+  campos.forEach(({ id, errId }) => {
+    const val = document.getElementById(id).value.trim();
+    const err = document.getElementById(errId);
+    if (!val) { err.style.display = 'block'; ok = false; }
+    else err.style.display = 'none';
+  });
+  const entrada = document.getElementById('fechaEntrada').value;
+  const salida  = document.getElementById('fechaSalida').value;
+  if (entrada && salida && entrada >= salida) {
+    document.getElementById('errFechaSalida').textContent = 'La salida debe ser posterior a la entrada';
+    document.getElementById('errFechaSalida').style.display = 'block';
+    ok = false;
+  }
+  return ok;
+}
+
+// ── Enviar reserva a la API ──
+async function enviarReserva() {
+  const entrada    = document.getElementById('fechaEntrada').value;
+  const salida     = document.getElementById('fechaSalida').value;
+  const personas   = parseInt(document.getElementById('numPersonas').value);
+  const noches     = Math.round((new Date(salida) - new Date(entrada)) / (1000 * 60 * 60 * 24));
+  const precioBase = noches * alojamientoSeleccionado.precioNoche;
+  const precioServ = noches * serviciosSeleccionados.reduce((s, x) => s + x.precio, 0);
+
+  const body = {
+    alojamiento: { id: alojamientoSeleccionado.id },
+    usuario:     { id: 1 }, // TODO: reemplazar con usuario logueado
+    fechaEntrada: entrada,
+    fechaSalida:  salida,
+    numPersonas:  personas,
+    precioTotal:  precioBase + precioServ,
+    notasCliente: document.getElementById('notas').value,
+    estado: 'PENDIENTE'
+  };
+
+  try {
+    const res = await fetch(`${API}/reservas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    document.getElementById('numReserva').textContent = `Reserva #${data.id || '???'}`;
+    cambiarPaso(2, 3);
+    document.getElementById('paso2').classList.add('completado');
+  } catch(e) {
+    alert('Error al enviar la reserva. Comprueba que el servidor está arrancado.');
+  }
+}
+
+// Fechas mínimas
+const hoy = new Date().toISOString().split('T')[0];
+document.getElementById('fechaEntrada').min = hoy;
+document.getElementById('fechaSalida').min = hoy;
+document.getElementById('fechaEntrada').addEventListener('change', e => {
+  document.getElementById('fechaSalida').min = e.target.value;
+  actualizarResumen();
+});
+document.getElementById('fechaSalida').addEventListener('change', actualizarResumen);
+
+cargarAlojamientos();
+cargarServicios();
+</script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reseñas — La Casa Baju</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --verde:     #2d4a2d;
+      --verde-med: #4a7c4a;
+      --verde-cla: #8fbc8f;
+      --crema:     #f5f0e8;
+      --arena:     #e8dfc8;
+      --blanco:    #fdfbf7;
+      --texto:     #2a2a2a;
+      --gris:      #888;
+      --oro:       #f4b942;
+      --error:     #c0392b;
+      --exito:     #27ae60;
+    }
+    body { font-family: 'Jost', sans-serif; background: var(--blanco); color: var(--texto); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(253,251,247,.96);
+      box-shadow: 0 2px 20px rgba(0,0,0,.08);
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--verde); text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-size: .85rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--texto); text-decoration: none; transition: color .3s; }
+    .nav-links a:hover { color: var(--verde); }
+    .nav-btn { background: var(--verde); color: #fff !important; padding: .5rem 1.4rem; border-radius: 2px; font-size: .8rem !important; }
+
+    .page-header {
+      background: linear-gradient(160deg, #1a2e1a 0%, #2d4a2d 100%);
+      padding: 10rem 4rem 5rem; text-align: center;
+    }
+    .page-header span { font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--verde-cla); display: block; margin-bottom: .8rem; }
+    .page-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 5vw, 4rem); color: #fff; margin-bottom: 1rem; }
+    .page-header p { color: rgba(255,255,255,.6); font-size: 1rem; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+    /* MEDIA */
+    .media-bar {
+      background: var(--verde);
+      display: grid; grid-template-columns: repeat(3, 1fr);
+    }
+    .media-item { padding: 2.5rem; text-align: center; border-right: 1px solid rgba(255,255,255,.1); }
+    .media-item:last-child { border-right: none; }
+    .media-num { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--verde-cla); display: block; }
+    .media-stars { color: var(--oro); font-size: 1.2rem; margin: .3rem 0; display: block; }
+    .media-label { font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+
+    /* CONTENIDO */
+    .resenas-content { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
+
+    /* FILTROS */
+    .filtros {
+      display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; align-items: center;
+    }
+    .filtros-label { font-size: .75rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gris); margin-right: .5rem; }
+    .filtro-btn {
+      padding: .5rem 1.2rem; border: 1px solid var(--arena); border-radius: 2px;
+      background: var(--blanco); color: var(--texto); font-family: 'Jost', sans-serif;
+      font-size: .82rem; cursor: pointer; transition: all .3s; letter-spacing: .05em;
+    }
+    .filtro-btn:hover, .filtro-btn.activo { background: var(--verde); color: #fff; border-color: var(--verde); }
+
+    /* GRID RESEÑAS */
+    .resenas-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem; margin-bottom: 4rem;
+    }
+    .resena-card {
+      background: var(--crema); border: 1px solid var(--arena);
+      border-radius: 4px; padding: 2rem;
+      transition: transform .3s, box-shadow .3s;
+      opacity: 0; transform: translateY(20px);
+      animation: aparecer .5s ease forwards;
+    }
+    .resena-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,.08); }
+    @keyframes aparecer { to { opacity: 1; transform: translateY(0); } }
+
+    .resena-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .resena-stars { color: var(--oro); font-size: 1rem; }
+    .resena-fecha { font-size: .75rem; color: var(--gris); }
+    .resena-titulo { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: .7rem; }
+    .resena-texto {
+      font-size: .9rem; color: #555; line-height: 1.7;
+      font-style: italic; margin-bottom: 1.5rem;
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .resena-autor { display: flex; align-items: center; gap: .8rem; }
+    .resena-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--verde); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: .85rem; flex-shrink: 0;
+    }
+    .resena-nombre { font-weight: 500; font-size: .88rem; }
+    .resena-aloj { font-size: .75rem; color: var(--gris); }
+
+    /* VACÍO */
+    .resenas-vacio { text-align: center; padding: 4rem; color: var(--gris); }
+    .resenas-vacio i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: .3; }
+
+    /* FORMULARIO NUEVA RESEÑA */
+    .nueva-resena {
+      background: var(--crema); border: 1px solid var(--arena);
+      border-radius: 4px; padding: 3rem; margin-top: 2rem;
+    }
+    .nueva-resena h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: .5rem; }
+    .nueva-resena > p { color: var(--gris); font-size: .9rem; margin-bottom: 2rem; line-height: 1.6; }
+
+    .estrellas-selector { display: flex; gap: .3rem; margin-bottom: 1.5rem; font-size: 2rem; cursor: pointer; }
+    .estrella { color: var(--arena); transition: color .2s; }
+    .estrella.activa, .estrella:hover, .estrella.hover { color: var(--oro); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gris); }
+    .form-group input, .form-group textarea {
+      padding: .75rem 1rem; border: 1px solid var(--arena); border-radius: 2px;
+      font-family: 'Jost', sans-serif; font-size: .9rem;
+      background: var(--blanco); color: var(--texto); transition: border-color .3s;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--verde-cla); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    .btn-enviar {
+      background: var(--verde); color: #fff; padding: .9rem 2.5rem;
+      border: none; border-radius: 2px; font-family: 'Jost', sans-serif;
+      font-size: .85rem; font-weight: 500; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; transition: background .3s; margin-top: 1.2rem;
+    }
+    .btn-enviar:hover { background: var(--verde-med); }
+
+    .form-msg { padding: 1rem; border-radius: 2px; margin-top: 1rem; font-size: .88rem; display: none; }
+    .form-msg.exito { background: rgba(39,174,96,.1); color: var(--exito); border: 1px solid rgba(39,174,96,.2); }
+    .form-msg.error { background: rgba(192,57,43,.1); color: var(--error); border: 1px solid rgba(192,57,43,.2); }
+
+    .aviso-moderacion {
+      display: flex; gap: .8rem; align-items: flex-start;
+      background: rgba(45,74,45,.06); border: 1px solid rgba(45,74,45,.15);
+      border-radius: 4px; padding: 1rem; margin-bottom: 1.5rem; font-size: .83rem; color: var(--gris);
+    }
+    .aviso-moderacion i { color: var(--verde-cla); margin-top: .1rem; flex-shrink: 0; }
+
+    footer { background: #111; color: rgba(255,255,255,.4); padding: 2rem 4rem; text-align: center; font-size: .8rem; margin-top: 0; }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .page-header { padding: 8rem 1.5rem 3rem; }
+      .media-bar { grid-template-columns: 1fr; }
+      .media-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.1); }
+      .resenas-content { padding: 3rem 1.5rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .nueva-resena { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">La Casa Baju</a>
+  <ul class="nav-links">
+    <li><a href="index.html#alojamientos">Alojamientos</a></li>
+    <li><a href="index.html#servicios">Servicios</a></li>
+    <li><a href="index.html#entorno">Entorno</a></li>
+    <li><a href="resenas.html">Reseñas</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="reservas.html" class="nav-btn">Reservar</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <span><i class="fas fa-star"></i> &nbsp; Lo que dicen nuestros huéspedes</span>
+  <h1>Reseñas</h1>
+  <p>Opiniones reales y verificadas de personas que se han alojado en La Casa Baju.</p>
+</div>
+
+<!-- MEDIA -->
+<div class="media-bar">
+  <div class="media-item">
+    <span class="media-num" id="mediaNum">4.9</span>
+    <span class="media-stars">★★★★★</span>
+    <span class="media-label">Puntuación media</span>
+  </div>
+  <div class="media-item">
+    <span class="media-num" id="totalResenas">0</span>
+    <span class="media-stars" style="opacity:0">★</span>
+    <span class="media-label">Reseñas verificadas</span>
+  </div>
+  <div class="media-item">
+    <span class="media-num">98%</span>
+    <span class="media-stars" style="opacity:0">★</span>
+    <span class="media-label">Recomendarían la casa</span>
+  </div>
+</div>
+
+<div class="resenas-content">
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <span class="filtros-label">Filtrar:</span>
+    <button class="filtro-btn activo" onclick="filtrar(this, 0)">Todas</button>
+    <button class="filtro-btn" onclick="filtrar(this, 5)">★★★★★ (5)</button>
+    <button class="filtro-btn" onclick="filtrar(this, 4)">★★★★☆ (4)</button>
+    <button class="filtro-btn" onclick="filtrar(this, 3)">★★★☆☆ (3)</button>
+  </div>
+
+  <!-- GRID -->
+  <div class="resenas-grid" id="resenasGrid">
+    <div class="resenas-vacio">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Cargando reseñas...</p>
+    </div>
+  </div>
+
+  <!-- FORMULARIO NUEVA RESEÑA -->
+  <div class="nueva-resena">
+    <h2>Deja tu reseña</h2>
+    <p>¿Has estado en La Casa Baju? Comparte tu experiencia con otros viajeros. Tu reseña será publicada tras revisión.</p>
+
+    <div class="aviso-moderacion">
+      <i class="fas fa-shield-alt"></i>
+      <span>Todas las reseñas son verificadas por nuestro equipo antes de publicarse para garantizar su autenticidad.</span>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <label style="font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:.8rem;">Tu puntuación *</label>
+      <div class="estrellas-selector" id="estrellasSelector">
+        <span class="estrella" data-val="1" onclick="seleccionarEstrella(1)">★</span>
+        <span class="estrella" data-val="2" onclick="seleccionarEstrella(2)">★</span>
+        <span class="estrella" data-val="3" onclick="seleccionarEstrella(3)">★</span>
+        <span class="estrella" data-val="4" onclick="seleccionarEstrella(4)">★</span>
+        <span class="estrella" data-val="5" onclick="seleccionarEstrella(5)">★</span>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Tu nombre *</label>
+        <input type="text" id="rNombre" placeholder="Nombre y apellido" />
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="rEmail" placeholder="tu@email.com" />
+      </div>
+      <div class="form-group full">
+        <label>Título de la reseña</label>
+        <input type="text" id="rTitulo" placeholder="Ej: Una escapada perfecta" />
+      </div>
+      <div class="form-group full">
+        <label>Tu experiencia *</label>
+        <textarea id="rComentario" placeholder="Cuéntanos cómo fue tu estancia..."></textarea>
+      </div>
+    </div>
+
+    <button class="btn-enviar" onclick="enviarResena()">
+      <i class="fas fa-star"></i> Enviar reseña
+    </button>
+    <div class="form-msg" id="resenaMsg"></div>
+  </div>
+
+</div>
+
+<footer>
+  © 2025 La Casa Baju — Proyecto Final DAW · David García Suárez
+</footer>
+
+<script>
+const API = 'http://localhost:8080/api';
+let todasResenas = [];
+let estrellaSeleccionada = 0;
+let filtroActual = 0;
+
+// Reseñas de ejemplo para cuando no hay datos en la API
+const resenasEjemplo = [
+  { id:1, puntuacion:5, titulo:'Una escapada perfecta', comentario:'Un lugar mágico para desconectar de la ciudad. La casa es preciosa, limpia y con todo lo necesario. El entorno es increíble.', creadaEn:'2024-08-15', usuario:{ nombre:'María', apellidos:'García' } },
+  { id:2, puntuacion:5, titulo:'Repetiremos sin duda', comentario:'La atención fue perfecta y las instalaciones impecables. El desayuno casero es una de las mejores cosas que hemos probado en mucho tiempo.', creadaEn:'2024-07-22', usuario:{ nombre:'Juan', apellidos:'López' } },
+  { id:3, puntuacion:4, titulo:'Muy recomendable', comentario:'Tranquilidad absoluta. Nos alojamos con la familia y los niños disfrutaron muchísimo. Volveremos el año que viene.', creadaEn:'2024-06-10', usuario:{ nombre:'Ana', apellidos:'Rodríguez' } },
+];
+
+async function cargarResenas() {
+  try {
+    const res = await fetch(`${API}/resenas`);
+    const datos = await res.json();
+    todasResenas = datos.length > 0 ? datos : resenasEjemplo;
+  } catch(e) {
+    todasResenas = resenasEjemplo;
+  }
+  renderResenas(todasResenas);
+  actualizarEstadisticas();
+}
+
+function renderResenas(lista) {
+  const grid = document.getElementById('resenasGrid');
+  if (lista.length === 0) {
+    grid.innerHTML = `<div class="resenas-vacio" style="grid-column:1/-1"><i class="fas fa-star"></i><p>No hay reseñas para este filtro.</p></div>`;
+    return;
+  }
+  grid.innerHTML = lista.map((r, i) => {
+    const estrellas = '★'.repeat(r.puntuacion) + '☆'.repeat(5 - r.puntuacion);
+    const iniciales = r.usuario ? `${r.usuario.nombre[0]}${r.usuario.apellidos[0]}` : 'HU';
+    const nombre    = r.usuario ? `${r.usuario.nombre} ${r.usuario.apellidos}` : 'Huésped';
+    const fecha     = new Date(r.creadaEn).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' });
+    return `
+      <div class="resena-card" style="animation-delay:${i * 0.08}s">
+        <div class="resena-header">
+          <span class="resena-stars">${estrellas}</span>
+          <span class="resena-fecha">${fecha}</span>
+        </div>
+        ${r.titulo ? `<div class="resena-titulo">${r.titulo}</div>` : ''}
+        <p class="resena-texto">"${r.comentario}"</p>
+        <div class="resena-autor">
+          <div class="resena-avatar">${iniciales}</div>
+          <div>
+            <div class="resena-nombre">${nombre}</div>
+            <div class="resena-aloj"><i class="fas fa-check-circle" style="color:var(--verde-cla)"></i> Estancia verificada</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filtrar(btn, estrellas) {
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  filtroActual = estrellas;
+  const filtradas = estrellas === 0 ? todasResenas : todasResenas.filter(r => r.puntuacion === estrellas);
+  renderResenas(filtradas);
+}
+
+function actualizarEstadisticas() {
+  if (todasResenas.length === 0) return;
+  const media = todasResenas.reduce((s, r) => s + r.puntuacion, 0) / todasResenas.length;
+  document.getElementById('mediaNum').textContent = media.toFixed(1);
+  document.getElementById('totalResenas').textContent = todasResenas.length;
+}
+
+// Selector de estrellas
+function seleccionarEstrella(val) {
+  estrellaSeleccionada = val;
+  document.querySelectorAll('.estrella').forEach((e, i) => {
+    e.classList.toggle('activa', i < val);
+  });
+}
+document.querySelectorAll('.estrella').forEach((e, i) => {
+  e.addEventListener('mouseenter', () => {
+    document.querySelectorAll('.estrella').forEach((s, j) => s.classList.toggle('hover', j <= i));
+  });
+  e.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.estrella').forEach(s => s.classList.remove('hover'));
+  });
+});
+
+async function enviarResena() {
+  const nombre     = document.getElementById('rNombre').value.trim();
+  const email      = document.getElementById('rEmail').value.trim();
+  const comentario = document.getElementById('rComentario').value.trim();
+  const msg        = document.getElementById('resenaMsg');
+
+  if (!nombre || !email || !comentario || estrellaSeleccionada === 0) {
+    msg.className = 'form-msg error';
+    msg.style.display = 'block';
+    msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Por favor rellena todos los campos y selecciona una puntuación.';
+    return;
+  }
+
+  const body = {
+    puntuacion:  estrellaSeleccionada,
+    titulo:      document.getElementById('rTitulo').value.trim(),
+    comentario,
+    usuario:     { id: 1 }, // TODO: usuario logueado
+    reserva:     { id: 1 }, // TODO: reserva real del usuario
+  };
+
+  try {
+    const res = await fetch(`${API}/resenas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      msg.className = 'form-msg exito';
+      msg.style.display = 'block';
+      msg.innerHTML = '<i class="fas fa-check-circle"></i> ¡Gracias por tu reseña! Será publicada tras revisión.';
+      document.getElementById('rNombre').value = '';
+      document.getElementById('rEmail').value = '';
+      document.getElementById('rTitulo').value = '';
+      document.getElementById('rComentario').value = '';
+      estrellaSeleccionada = 0;
+      document.querySelectorAll('.estrella').forEach(e => e.classList.remove('activa'));
+    } else {
+      throw new Error();
+    }
+  } catch(e) {
+    msg.className = 'form-msg error';
+    msg.style.display = 'block';
+    msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> No se pudo enviar la reseña. Comprueba que el servidor está arrancado.';
+  }
+}
+
+cargarResenas();
+</script>
+</body>
+</html>
