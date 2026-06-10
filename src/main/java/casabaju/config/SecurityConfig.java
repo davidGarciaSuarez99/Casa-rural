@@ -39,40 +39,31 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                                // Público — sin necesidad de cuenta
-                                .requestMatchers("/api/reservas/disponibilidad").permitAll()
-                                .requestMatchers("/api/auth/login").permitAll()
-                                .requestMatchers("/api/auth/registro").permitAll()
-                                .requestMatchers("/api/alojamientos/**").permitAll()
-                                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contacto").permitAll()
+                        // 1. ZONA TOTALMENTE PÚBLICA (No requieren login)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reservas/ocupadas").permitAll()
+                        .requestMatchers("/api/reservas/disponibilidad").permitAll()
 
+                        // Importante: Ponemos tanto la ruta con barra como sin barra
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/resenas").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/resenas/**").permitAll()
 
-                                // Solo admin
-                                .requestMatchers("/api/auth/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers("/api/auth/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/contacto").hasRole("ADMIN")   // ← CAMBIAR
-                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/contacto/noleidos").hasRole("ADMIN")
-                                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/contacto/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/registro").permitAll()
+                        .requestMatchers("/api/alojamientos/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contacto").permitAll()
 
+                        // 2. ZONA RESTRINGIDA A ADMINISTRADORES
+                        .requestMatchers("/api/auth/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/contacto").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/contacto/noleidos").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/contacto/**").hasRole("ADMIN")
 
-                                // 1. Permite que cualquiera consulte el endpoint de fechas ocupadas (petición GET)
-                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reservas/ocupadas").permitAll()
+                        // 3. ZONA CLIENTES LOGUEADOS (Reservas y creación de reseñas)
+                        .requestMatchers("/api/reservas/**").authenticated()
+                        .requestMatchers("/api/resenas/**").authenticated()
 
-                                // 2. Obliga a estar logueado para todo lo demás de reservas (crear, ver mis reservas particulares...)
-                                .requestMatchers("/api/reservas/**").authenticated()
-                                // 1. Permite que cualquiera VEA las reseñas (peticiones GET) de forma pública
-                                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/resenas/**").permitAll()
-                                // 2. Obliga a iniciar sesión para el resto de acciones (crear, borrar...)
-                                .requestMatchers("/api/resenas/**").authenticated()
-
-                                // Todo lo demás autenticado
-                                .anyRequest().authenticated()
-
-
-			// .anyRequest().permitAll()
-
-
-
+                        // 4. Todo lo demás por defecto
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

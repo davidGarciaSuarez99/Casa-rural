@@ -547,7 +547,7 @@
     <span class="stat-label">Familias alojadas</span>
   </div>
   <div class="stat">
-    <span class="stat-num">4.9</span>
+    <span class="stat-num" id="valoracionMedia"><i class="fas fa-spinner fa-spin" style="font-size: 0.6em;"></i></span>
     <span class="stat-label">Valoración media</span>
   </div>
   <div class="stat">
@@ -803,13 +803,18 @@
   }
 
   // ── Cargar reseñas desde la API ──
+  // ── Cargar reseñas desde la API y calcular Valoración Media ──
   async function cargarResenas() {
     const grid = document.getElementById('resenasGrid');
+    const valoracionMediaEl = document.getElementById('valoracionMedia'); // Seleccionamos el elemento de la estadística
     if (!grid) return;
 
     try {
-      const res = await fetchConToken(`${API}/resenas`);
+      // Llamada a la API (usando fetch normal porque las reseñas suelen ser públicas)
+      const res = await fetch(`${API}/resenas`);
+
       if (!res.ok) {
+        if(valoracionMediaEl) valoracionMediaEl.textContent = '-';
         grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:red; padding:2rem;">
                             <p>⚠️ Error del backend: Código ${res.status}</p>
                           </div>`;
@@ -817,13 +822,25 @@
       }
 
       const datos = await res.json();
+
       if (!datos || datos.length === 0) {
+        if(valoracionMediaEl) valoracionMediaEl.textContent = '-';
         grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--gris); padding:2rem;">
                             <p>No hay reseñas públicas en la base de datos.</p>
                           </div>`;
         return;
       }
 
+      // ---> 1. CÁLCULO DINÁMICO DE LA VALORACIÓN MEDIA <---
+      if (valoracionMediaEl) {
+        // Sumamos todas las puntuaciones (columna 'puntuacion' de la BD)
+        const totalPuntos = datos.reduce((suma, r) => suma + (r.puntuacion || 5), 0);
+        // Calculamos la media y forzamos 1 decimal (ej: 4.5)
+        const media = (totalPuntos / datos.length).toFixed(1);
+        valoracionMediaEl.textContent = media;
+      }
+
+      // ---> 2. RENDERIZADO DE LAS TARJETAS DE RESEÑAS <---
       grid.innerHTML = datos.slice(0, 3).map(r => {
         const puntos = r.puntuacion || 5;
         const estrellas = '★'.repeat(puntos) + '☆'.repeat(Math.max(0, 5 - puntos));
@@ -843,8 +860,9 @@
       }).join('');
 
     } catch (e) {
+      if(valoracionMediaEl) valoracionMediaEl.textContent = '-';
       grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:orange; padding:2rem;">
-                          <p>❌ No se pudo conectar con la API para las reseñas.</p>
+                          <p>No se pudo conectar con la API para las reseñas.</p>
                         </div>`;
     }
   }
@@ -892,14 +910,14 @@
 
     } catch (e) {
       grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:orange; padding:2rem;">
-                          <p>❌ No se pudo conectar con la API para las reseñas.</p>
+                          <p>No se pudo conectar con la API para las reseñas.</p>
                         </div>`;
     }
   }
   // Función para traer desde la API las fechas ocupadas y listarlas
   async function cargarFechasOcupadas() {
     try {
-      const res = await fetchConToken(`${API}/reservas/ocupadas`);
+      const res = await fetch(`${API}/reservas/ocupadas`);
       if (!res.ok) return;
 
       const reservas = await res.json();

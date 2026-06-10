@@ -514,6 +514,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Si tiene sesión activa, carga la lista de alojamientos
   cargarAlojamientos();
+
+  cargarFechasBloqueadas();
 });
 
 function seleccionarAlojamiento(el, aloj) {
@@ -554,6 +556,50 @@ function toggleServicio(el, id, precio) {
 }
 
 // ── Disponibilidad ──
+// ── Cargar fechas bloqueadas para deshabilitar días en los inputs ──
+async function cargarFechasBloqueadas() {
+  try {
+    const res = await fetch(`${API}/reservas/ocupadas`);
+    if (!res.ok) return;
+    const reservas = await res.json();
+    window.fechasBloqueadas = reservas;
+    aplicarFechasBloqueadasAlCalendario();
+  } catch(e) {
+    console.warn('No se pudieron cargar fechas bloqueadas');
+  }
+}
+
+// Deshabilita días ocupados usando el atributo nativo + validación onChange
+function aplicarFechasBloqueadasAlCalendario() {
+  // Los inputs type="date" nativos no soportan deshabilitar días individuales,
+  // así que validamos en onChange y mostramos el conflicto
+  const inputEntrada = document.getElementById('fechaEntrada');
+  const inputSalida  = document.getElementById('fechaSalida');
+
+  function verificar() {
+    const e = inputEntrada.value;
+    const s = inputSalida.value;
+    if (!e || !s || !window.fechasBloqueadas) return;
+    const ini = new Date(e), fin = new Date(s);
+    const result = document.getElementById('disponResult');
+    for (let r of window.fechasBloqueadas) {
+      const desde = new Date(r.fechaEntrada);
+      const hasta = new Date(r.fechaSalida);
+      if (ini <= hasta && fin >= desde) {
+        const fmt = d => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+        result.style.display = 'block';
+        result.innerHTML = `<span style="color:var(--error)"><i class="fas fa-times-circle"></i> Esas fechas no están disponibles: la casa ya está reservada del <strong>${fmt(r.fechaEntrada)}</strong> al <strong>${fmt(r.fechaSalida)}</strong>.</span>`;
+        inputSalida.value = '';
+        return;
+      }
+    }
+  }
+
+  inputEntrada.addEventListener('change', verificar);
+  inputSalida.addEventListener('change', verificar);
+}
+
+// Actualiza comprobarDisponibilidad para mostrar el conflicto exacto
 async function comprobarDisponibilidad() {
   const entrada = document.getElementById('fechaEntrada').value;
   const salida  = document.getElementById('fechaSalida').value;
@@ -576,10 +622,26 @@ async function comprobarDisponibilidad() {
   try {
     const res = await fetchConToken(`${API}/reservas/disponibilidad?alojamientoId=${alojamientoSeleccionado.id}&entrada=${entrada}&salida=${salida}`);
     const disponible = await res.json();
-    result.innerHTML = disponible
-      ? `<span style="color:var(--exito)"><i class="fas fa-check-circle"></i> ¡Disponible para esas fechas!</span>`
-      : `<span style="color:var(--error)"><i class="fas fa-times-circle"></i> No disponible. Prueba con otras fechas.</span>`;
-    actualizarResumen();
+
+    if (disponible) {
+      result.innerHTML = `<span style="color:var(--exito)"><i class="fas fa-check-circle"></i> ¡Disponible para esas fechas!</span>`;
+      actualizarResumen();
+    } else {
+      let mensaje = 'Lo sentimos, esas fechas no están disponibles.';
+      if (window.fechasBloqueadas) {
+        const ini = new Date(entrada), fin = new Date(salida);
+        for (let r of window.fechasBloqueadas) {
+          const desde = new Date(r.fechaEntrada);
+          const hasta = new Date(r.fechaSalida);
+          if (ini <= hasta && fin >= desde) {
+            const fmt = d => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+            mensaje = `La casa ya está reservada del <strong>${fmt(r.fechaEntrada)}</strong> al <strong>${fmt(r.fechaSalida)}</strong>.`;
+            break;
+          }
+        }
+      }
+      result.innerHTML = `<span style="color:var(--error)"><i class="fas fa-times-circle"></i> ${mensaje}</span>`;
+    }
   } catch(e) {
     result.innerHTML = '<span style="color:var(--error)">Error al conectar con el servidor.</span>';
   }
