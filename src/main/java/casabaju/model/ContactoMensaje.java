@@ -34,11 +34,14 @@ public class ContactoMensaje {
     private String mensaje;
 
     @Column(nullable = false)
+    @org.hibernate.annotations.ColumnDefault("false")
     private Boolean leido = false;
 
     @Column(nullable = false)
+    @org.hibernate.annotations.ColumnDefault("false")
     private Boolean respondido = false;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
-    private LocalDateTime creadoEn = LocalDateTime.now();
+    @org.hibernate.annotations.CreationTimestamp
+    private LocalDateTime creadoEn;
 }

@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="auth.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -156,6 +157,30 @@
 
     footer { background: #111; color: rgba(255,255,255,.4); padding: 2rem 4rem; text-align: center; font-size: .8rem; margin-top: 0; }
 
+    .selector-reserva {
+      margin-bottom: 1.5rem;
+    }
+    .selector-reserva label {
+      font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--gris); display: block; margin-bottom: .5rem;
+    }
+    .selector-reserva select {
+      width: 100%; padding: .75rem 1rem; border: 1px solid var(--arena);
+      border-radius: 2px; font-family: 'Jost', sans-serif; font-size: .9rem;
+      background: var(--blanco); color: var(--texto); transition: border-color .3s;
+      cursor: pointer;
+    }
+    .selector-reserva select:focus { outline: none; border-color: var(--verde-cla); }
+
+    .aviso-sin-reservas {
+      display: flex; gap: .8rem; align-items: flex-start;
+      background: rgba(107,76,42,.06); border: 1px solid rgba(107,76,42,.2);
+      border-radius: 4px; padding: 1.2rem 1.5rem; font-size: .88rem; color: var(--gris);
+      line-height: 1.6;
+    }
+    .aviso-sin-reservas i { color: var(--marron, #6b4c2a); margin-top: .15rem; flex-shrink: 0; }
+    .aviso-sin-reservas a { color: var(--verde); text-decoration: underline; }
+
     @media (max-width: 900px) {
       nav { padding: 1rem 1.5rem; }
       .nav-links { display: none; }
@@ -188,7 +213,6 @@
   <p>Opiniones reales y verificadas de personas que se han alojado en La Casa Baju.</p>
 </div>
 
-<!-- MEDIA -->
 <div class="media-bar">
   <div class="media-item">
     <span class="media-num" id="mediaNum">4.9</span>
@@ -209,7 +233,6 @@
 
 <div class="resenas-content">
 
-  <!-- FILTROS -->
   <div class="filtros">
     <span class="filtros-label">Filtrar:</span>
     <button class="filtro-btn activo" onclick="filtrar(this, 0)">Todas</button>
@@ -218,22 +241,33 @@
     <button class="filtro-btn" onclick="filtrar(this, 3)">★★★☆☆ (3)</button>
   </div>
 
-  <!-- GRID -->
   <div class="resenas-grid" id="resenasGrid">
-    <div class="resenas-vacio">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Cargando reseñas...</p>
-    </div>
+
   </div>
 
-  <!-- FORMULARIO NUEVA RESEÑA -->
   <div class="nueva-resena">
     <h2>Deja tu reseña</h2>
     <p>¿Has estado en La Casa Baju? Comparte tu experiencia con otros viajeros. Tu reseña será publicada tras revisión.</p>
 
+    <!-- Aviso si no hay reservas completadas -->
+    <div class="aviso-sin-reservas" id="avisoSinReservas" style="display:none">
+      <i class="fas fa-info-circle"></i>
+      <span>Solo puedes dejar una reseña si has completado una estancia. ¿Aún no has reservado? <a href="reservas.html">Haz tu reserva aquí</a>.</span>
+    </div>
+
+    <!-- Formulario (se oculta si no hay reservas completadas) -->
+    <div id="formularioResena">
+
     <div class="aviso-moderacion">
       <i class="fas fa-shield-alt"></i>
       <span>Todas las reseñas son verificadas por nuestro equipo antes de publicarse para garantizar su autenticidad.</span>
+    </div>
+
+    <div class="selector-reserva">
+      <label>Estancia a reseñar *</label>
+      <select id="selectReserva">
+        <option value="">Cargando tus estancias...</option>
+      </select>
     </div>
 
     <div style="margin-bottom:1.5rem;">
@@ -270,6 +304,8 @@
       <i class="fas fa-star"></i> Enviar reseña
     </button>
     <div class="form-msg" id="resenaMsg"></div>
+
+    </div><!-- fin #formularioResena -->
   </div>
 
 </div>
@@ -279,42 +315,74 @@
 </footer>
 
 <script>
-const API = 'http://localhost:8080/api';
-let todasResenas = [];
-let estrellaSeleccionada = 0;
-let filtroActual = 0;
+  const API = 'http://localhost:8080/api';
+  let todasResenas = [];
+  let estrellaSeleccionada = 0;
+  let filtroActual = 0;
+  const resenasEjemplo = [];
 
-// Reseñas de ejemplo para cuando no hay datos en la API
-const resenasEjemplo = [
-  { id:1, puntuacion:5, titulo:'Una escapada perfecta', comentario:'Un lugar mágico para desconectar de la ciudad. La casa es preciosa, limpia y con todo lo necesario. El entorno es increíble.', creadaEn:'2024-08-15', usuario:{ nombre:'María', apellidos:'García' } },
-  { id:2, puntuacion:5, titulo:'Repetiremos sin duda', comentario:'La atención fue perfecta y las instalaciones impecables. El desayuno casero es una de las mejores cosas que hemos probado en mucho tiempo.', creadaEn:'2024-07-22', usuario:{ nombre:'Juan', apellidos:'López' } },
-  { id:3, puntuacion:4, titulo:'Muy recomendable', comentario:'Tranquilidad absoluta. Nos alojamos con la familia y los niños disfrutaron muchísimo. Volveremos el año que viene.', creadaEn:'2024-06-10', usuario:{ nombre:'Ana', apellidos:'Rodríguez' } },
-];
+  async function cargarResenas() {
+    try {
+      const res = await fetchConToken(`${API}/resenas`);
 
-async function cargarResenas() {
-  try {
-    const res = await fetch(`${API}/resenas`);
-    const datos = await res.json();
-    todasResenas = datos.length > 0 ? datos : resenasEjemplo;
-  } catch(e) {
-    todasResenas = resenasEjemplo;
+      if (res.status === 401 || res.status === 403) {
+        AUTH.cerrarSesion();
+        return;
+      }
+
+      const datos = await res.json();
+      todasResenas = datos.length > 0 ? datos : resenasEjemplo;
+    } catch(e) {
+      todasResenas = resenasEjemplo;
+    }
+    renderResenas(todasResenas);
+    actualizarEstadisticas();
   }
-  renderResenas(todasResenas);
-  actualizarEstadisticas();
-}
 
-function renderResenas(lista) {
-  const grid = document.getElementById('resenasGrid');
-  if (lista.length === 0) {
-    grid.innerHTML = `<div class="resenas-vacio" style="grid-column:1/-1"><i class="fas fa-star"></i><p>No hay reseñas para este filtro.</p></div>`;
-    return;
+  // ── Carga las reservas COMPLETADAS del usuario para el selector ──
+  async function cargarReservasCompletadas() {
+    const userId = localStorage.getItem('userId');
+    const select = document.getElementById('selectReserva');
+
+    try {
+      const res = await fetchConToken(`${API}/reservas/usuario/${userId}`);
+      const reservas = await res.json();
+      const completadas = reservas.filter(r => r.estado === 'COMPLETADA');
+
+      if (completadas.length === 0) {
+        document.getElementById('formularioResena').style.display = 'none';
+        document.getElementById('avisoSinReservas').style.display = 'flex';
+        return;
+      }
+
+      select.innerHTML = '<option value="">Selecciona una estancia...</option>';
+      completadas.forEach(r => {
+        const entrada = new Date(r.fechaEntrada).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        const salida  = new Date(r.fechaSalida).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        const nombre  = r.alojamiento?.nombre || 'Alojamiento';
+        const option  = document.createElement('option');
+        option.value  = r.id;
+        option.textContent = `${nombre} — ${entrada} al ${salida}`;
+        select.appendChild(option);
+      });
+
+    } catch(e) {
+      select.innerHTML = '<option value="">Error al cargar estancias</option>';
+    }
   }
-  grid.innerHTML = lista.map((r, i) => {
-    const estrellas = '★'.repeat(r.puntuacion) + '☆'.repeat(5 - r.puntuacion);
-    const iniciales = r.usuario ? `${r.usuario.nombre[0]}${r.usuario.apellidos[0]}` : 'HU';
-    const nombre    = r.usuario ? `${r.usuario.nombre} ${r.usuario.apellidos}` : 'Huésped';
-    const fecha     = new Date(r.creadaEn).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' });
-    return `
+
+  function renderResenas(lista) {
+    const grid = document.getElementById('resenasGrid');
+    if (lista.length === 0) {
+      grid.innerHTML = `<div class="resenas-vacio" style="grid-column:1/-1"><i class="fas fa-star"></i><p>No hay reseñas para este filtro.</p></div>`;
+      return;
+    }
+    grid.innerHTML = lista.map((r, i) => {
+      const estrellas = '★'.repeat(r.puntuacion) + '☆'.repeat(5 - r.puntuacion);
+      const iniciales = r.usuario ? `${r.usuario.nombre[0]}${r.usuario.apellidos[0]}` : 'HU';
+      const nombre    = r.usuario ? `${r.usuario.nombre} ${r.usuario.apellidos}` : 'Huésped';
+      const fecha     = new Date(r.creadaEn).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' });
+      return `
       <div class="resena-card" style="animation-delay:${i * 0.08}s">
         <div class="resena-header">
           <span class="resena-stars">${estrellas}</span>
@@ -330,88 +398,106 @@ function renderResenas(lista) {
           </div>
         </div>
       </div>`;
-  }).join('');
-}
-
-function filtrar(btn, estrellas) {
-  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  filtroActual = estrellas;
-  const filtradas = estrellas === 0 ? todasResenas : todasResenas.filter(r => r.puntuacion === estrellas);
-  renderResenas(filtradas);
-}
-
-function actualizarEstadisticas() {
-  if (todasResenas.length === 0) return;
-  const media = todasResenas.reduce((s, r) => s + r.puntuacion, 0) / todasResenas.length;
-  document.getElementById('mediaNum').textContent = media.toFixed(1);
-  document.getElementById('totalResenas').textContent = todasResenas.length;
-}
-
-// Selector de estrellas
-function seleccionarEstrella(val) {
-  estrellaSeleccionada = val;
-  document.querySelectorAll('.estrella').forEach((e, i) => {
-    e.classList.toggle('activa', i < val);
-  });
-}
-document.querySelectorAll('.estrella').forEach((e, i) => {
-  e.addEventListener('mouseenter', () => {
-    document.querySelectorAll('.estrella').forEach((s, j) => s.classList.toggle('hover', j <= i));
-  });
-  e.addEventListener('mouseleave', () => {
-    document.querySelectorAll('.estrella').forEach(s => s.classList.remove('hover'));
-  });
-});
-
-async function enviarResena() {
-  const nombre     = document.getElementById('rNombre').value.trim();
-  const email      = document.getElementById('rEmail').value.trim();
-  const comentario = document.getElementById('rComentario').value.trim();
-  const msg        = document.getElementById('resenaMsg');
-
-  if (!nombre || !email || !comentario || estrellaSeleccionada === 0) {
-    msg.className = 'form-msg error';
-    msg.style.display = 'block';
-    msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Por favor rellena todos los campos y selecciona una puntuación.';
-    return;
+    }).join('');
   }
 
-  const body = {
-    puntuacion:  estrellaSeleccionada,
-    titulo:      document.getElementById('rTitulo').value.trim(),
-    comentario,
-    usuario:     { id: 1 }, // TODO: usuario logueado
-    reserva:     { id: 1 }, // TODO: reserva real del usuario
-  };
+  function filtrar(btn, estrellas) {
+    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    filtroActual = estrellas;
+    const filtradas = estrellas === 0 ? todasResenas : todasResenas.filter(r => r.puntuacion === estrellas);
+    renderResenas(filtradas);
+  }
 
-  try {
-    const res = await fetch(`${API}/resenas`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+  function actualizarEstadisticas() {
+    if (todasResenas.length === 0) return;
+    const media = todasResenas.reduce((s, r) => s + r.puntuacion, 0) / todasResenas.length;
+    document.getElementById('mediaNum').textContent = media.toFixed(1);
+    document.getElementById('totalResenas').textContent = todasResenas.length;
+  }
+
+  function seleccionarEstrella(val) {
+    estrellaSeleccionada = val;
+    document.querySelectorAll('.estrella').forEach((e, i) => {
+      e.classList.toggle('activa', i < val);
     });
-    if (res.ok) {
-      msg.className = 'form-msg exito';
-      msg.style.display = 'block';
-      msg.innerHTML = '<i class="fas fa-check-circle"></i> ¡Gracias por tu reseña! Será publicada tras revisión.';
-      document.getElementById('rNombre').value = '';
-      document.getElementById('rEmail').value = '';
-      document.getElementById('rTitulo').value = '';
-      document.getElementById('rComentario').value = '';
-      estrellaSeleccionada = 0;
-      document.querySelectorAll('.estrella').forEach(e => e.classList.remove('activa'));
-    } else {
-      throw new Error();
-    }
-  } catch(e) {
-    msg.className = 'form-msg error';
-    msg.style.display = 'block';
-    msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> No se pudo enviar la reseña. Comprueba que el servidor está arrancado.';
   }
-}
+  document.querySelectorAll('.estrella').forEach((e, i) => {
+    e.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.estrella').forEach((s, j) => s.classList.toggle('hover', j <= i));
+    });
+    e.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.estrella').forEach(s => s.classList.remove('hover'));
+    });
+  });
 
-cargarResenas();
+  async function enviarResena() {
+    const nombre      = document.getElementById('rNombre').value.trim();
+    const email       = document.getElementById('rEmail').value.trim();
+    const comentario  = document.getElementById('rComentario').value.trim();
+    const reservaId   = document.getElementById('selectReserva').value;
+    const msg         = document.getElementById('resenaMsg');
+
+    if (!nombre || !email || !comentario || estrellaSeleccionada === 0 || !reservaId) {
+      msg.className = 'form-msg error';
+      msg.style.display = 'block';
+      msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Por favor rellena todos los campos, selecciona una estancia y una puntuación.';
+      return;
+    }
+
+    const body = {
+      puntuacion:  estrellaSeleccionada,
+      titulo:      document.getElementById('rTitulo').value.trim(),
+      comentario,
+      usuario:     { id: parseInt(localStorage.getItem('userId')) },
+      reserva:     { id: parseInt(reservaId) },
+    };
+
+    try {
+      const res = await fetchConToken(`${API}/resenas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        AUTH.cerrarSesion();
+        return;
+      }
+
+      if (res.status === 409) {
+        msg.className = 'form-msg error';
+        msg.style.display = 'block';
+        msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Ya has dejado una reseña para esta estancia.';
+        return;
+      }
+
+      if (res.ok) {
+        msg.className = 'form-msg exito';
+        msg.style.display = 'block';
+        msg.innerHTML = '<i class="fas fa-check-circle"></i> ¡Gracias por tu reseña! Será publicada tras revisión.';
+        document.getElementById('rNombre').value = '';
+        document.getElementById('rEmail').value = '';
+        document.getElementById('rTitulo').value = '';
+        document.getElementById('rComentario').value = '';
+        document.getElementById('selectReserva').value = '';
+        estrellaSeleccionada = 0;
+        document.querySelectorAll('.estrella').forEach(e => e.classList.remove('activa'));
+      } else {
+        throw new Error();
+      }
+    } catch(e) {
+      msg.className = 'form-msg error';
+      msg.style.display = 'block';
+      msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> No se pudo enviar la reseña. Comprueba que el servidor está arrancado.';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    AUTH.requerirLogin();
+    cargarResenas();
+    cargarReservasCompletadas();
+  });
 </script>
 </body>
 </html>

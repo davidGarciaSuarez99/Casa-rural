@@ -3,6 +3,7 @@ package casabaju.controller;
 import casabaju.model.Resena;
 import casabaju.service.ResenaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +30,14 @@ public class ResenaController {
     }
 
     // POST /api/resenas → crear nueva reseña
+    // ResenaController.java
     @PostMapping
-    public ResponseEntity<Resena> crear(@RequestBody Resena resena) {
-        return ResponseEntity.ok(resenaService.crear(resena));
+    public ResponseEntity<?> crear(@RequestBody Resena resena) {
+        try {
+            return ResponseEntity.ok(resenaService.crear(resena));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     // PUT /api/resenas/1/aprobar → aprobar reseña (admin)
@@ -46,4 +52,6 @@ public class ResenaController {
         resenaService.eliminar(id);
         return ResponseEntity.ok().build();
     }
+
+
 }

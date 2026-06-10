@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="auth.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -460,7 +461,14 @@ let serviciosSeleccionados = [];
 async function cargarAlojamientos() {
   const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
   try {
-    const res = await fetch(`${API}/alojamientos`);
+    const res = await fetchConToken(`${API}/alojamientos`);
+
+    // Si la API responde con un error de acceso/sesión caducada
+    if (res.status === 401 || res.status === 403) {
+      AUTH.cerrarSesion();
+      return;
+    }
+
     const datos = await res.json();
     document.getElementById('listaAlojamientos').innerHTML = datos.map((a, i) => `
       <div class="aloj-card" onclick="seleccionarAlojamiento(this, ${JSON.stringify(a).replace(/"/g, '&quot;')})" data-id="${a.id}">
@@ -495,9 +503,18 @@ async function cargarAlojamientos() {
 
   } catch(e) {
     document.getElementById('listaAlojamientos').innerHTML = `
-      <p style="color:var(--error)"><i class="fas fa-exclamation-circle"></i> No se pudo conectar con el servidor. Asegúrate de que Spring Boot está arrancado.</p>`;
+      <p style="color:red; font-weight:500;"><i class="fas fa-exclamation-circle"></i> No se pudo conectar con el servidor. Asegúrate de que Spring Boot está arrancado.</p>`;
   }
 }
+
+// ── Proteger vista y arrancar la carga automática ──
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Si el usuario entra sin token, lo echa a login.html directamente
+  AUTH.requerirLogin();
+
+  // 2. Si tiene sesión activa, carga la lista de alojamientos
+  cargarAlojamientos();
+});
 
 function seleccionarAlojamiento(el, aloj) {
   document.querySelectorAll('.aloj-card').forEach(c => c.classList.remove('seleccionado'));
@@ -557,7 +574,7 @@ async function comprobarDisponibilidad() {
   result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
 
   try {
-    const res = await fetch(`${API}/reservas/disponibilidad?alojamientoId=${alojamientoSeleccionado.id}&entrada=${entrada}&salida=${salida}`);
+    const res = await fetchConToken(`${API}/reservas/disponibilidad?alojamientoId=${alojamientoSeleccionado.id}&entrada=${entrada}&salida=${salida}`);
     const disponible = await res.json();
     result.innerHTML = disponible
       ? `<span style="color:var(--exito)"><i class="fas fa-check-circle"></i> ¡Disponible para esas fechas!</span>`
@@ -690,7 +707,7 @@ async function enviarReserva() {
 
   const body = {
     alojamiento: { id: alojamientoSeleccionado.id },
-    usuario:     { id: 1 }, // TODO: reemplazar con usuario logueado
+    usuario: { id: parseInt(localStorage.getItem('userId')) },
     fechaEntrada: entrada,
     fechaSalida:  salida,
     numPersonas:  personas,
@@ -700,7 +717,7 @@ async function enviarReserva() {
   };
 
   try {
-    const res = await fetch(`${API}/reservas`, {
+    const res = await fetchConToken(`${API}/reservas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)

@@ -11,10 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
 @RestController
 @RequestMapping("/api/reservas")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = {"Authorization", "Content-Type", "Accept"})
 public class ReservaController {
 
     @Autowired
@@ -23,6 +22,7 @@ public class ReservaController {
     // GET /api/reservas → todas las reservas (admin)
     @GetMapping
     public List<Reserva> obtenerTodas() {
+        System.out.println("Obteniendo reservas");
         return reservaService.obtenerTodas();
     }
 

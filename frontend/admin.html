@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="auth.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -227,6 +228,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <!-- SIDEBAR -->
@@ -274,7 +276,7 @@
                 <small>admin@casabaju.com</small>
             </div>
         </div>
-        <button class="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+        <button class="btn-logout" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
     </div>
 </aside>
 
@@ -424,6 +426,11 @@
 </main>
 
 <script>
+    const token = localStorage.getItem('token');
+    const rol   = localStorage.getItem('rol');
+    if (!token || rol !== 'ADMIN') {
+        window.location.href = 'login.html';
+    }
     const API = 'http://localhost:8080/api';
     let reservasData = [];
     let calFecha = new Date();
@@ -455,7 +462,14 @@
 
         // Cargar cada sección de forma independiente para que un fallo no afecte a las demás
         try {
-            const res = await fetch(`${API}/reservas`);
+            const token = localStorage.getItem('token');
+            const res = await fetchConToken(`${API}/reservas`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             reservasData = await res.json();
             const pendientes = reservasData.filter(r => r.estado === 'PENDIENTE').length;
             document.getElementById('statTotalReservas').textContent = reservasData.length;
@@ -469,14 +483,14 @@
         }
 
         try {
-            const res = await fetch(`${API}/contacto/noleidos`);
+            const res = await fetchConToken(`${API}/contacto/noleidos`);
             const mensajes = await res.json();
             document.getElementById('statMensajes').textContent  = mensajes.length;
             document.getElementById('badgeMensajes').textContent = mensajes.length;
         } catch(e) { document.getElementById('statMensajes').textContent = '0'; }
 
         try {
-            const res = await fetch(`${API}/resenas/pendientes`);
+            const res = await fetchConToken(`${API}/resenas/pendientes`);
             const resenas = await res.json();
             document.getElementById('statResenas').textContent  = resenas.length;
             document.getElementById('badgeResenas').textContent = resenas.length;
@@ -486,7 +500,14 @@
     // ── RESERVAS ──
     async function cargarReservas(estado = '') {
         try {
-            const res = await fetch(`${API}/reservas`);
+            const token = localStorage.getItem('token');
+            const res = await fetchConToken(`${API}/reservas`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             reservasData = await res.json();
             const filtradas = estado ? reservasData.filter(r => r.estado === estado) : reservasData;
             renderTablaReservas('tablaReservas', filtradas, true);
@@ -525,7 +546,7 @@
     async function cambiarEstado(id, estado) {
         if (!confirm(`¿Cambiar el estado de la reserva #${id} a ${estado}?`)) return;
         try {
-            await fetch(`${API}/reservas/${id}/estado?estado=${estado}`, { method: 'PUT' });
+            await fetchConToken(`${API}/reservas/${id}/estado?estado=${estado}`, { method: 'PUT' });
             cargarReservas();
             cargarDashboard();
         } catch(e) { alert('Error al cambiar el estado'); }
@@ -575,7 +596,7 @@
     // ── RESEÑAS ──
     async function cargarResenas() {
         try {
-            const res = await fetch(`${API}/resenas/pendientes`);
+            const res = await fetchConToken(`${API}/resenas/pendientes`);
             const datos = await res.json();
             const lista = document.getElementById('listaResenas');
             if (!datos.length) {
@@ -606,7 +627,7 @@
 
     async function aprobarResena(id) {
         try {
-            await fetch(`${API}/resenas/${id}/aprobar`, { method: 'PUT' });
+            await fetchConToken(`${API}/resenas/${id}/aprobar`, { method: 'PUT' });
             document.getElementById(`resena-${id}`).remove();
             cargarDashboard();
         } catch(e) { alert('Error al aprobar la reseña'); }
@@ -615,17 +636,22 @@
     async function eliminarResena(id) {
         if (!confirm('¿Eliminar esta reseña?')) return;
         try {
-            await fetch(`${API}/resenas/${id}`, { method: 'DELETE' });
+            await fetchConToken(`${API}/resenas/${id}`, { method: 'DELETE' });
             document.getElementById(`resena-${id}`).remove();
             cargarDashboard();
         } catch(e) { alert('Error al eliminar la reseña'); }
     }
 
     // ── MENSAJES ──
+    let mensajesData = [];
+
+
     async function cargarMensajes() {
         try {
-            const res = await fetch(`${API}/contacto`);
+            const res = await fetchConToken(`${API}/contacto`);
             const datos = await res.json();
+            mensajesData = datos; // Guardamos los mensajes en la variable global
+
             const lista = document.getElementById('listaMensajes');
             if (!datos.length) {
                 lista.innerHTML = `<div class="tabla-vacio"><i class="fas fa-inbox"></i><p>No hay mensajes</p></div>`;
@@ -641,7 +667,8 @@
         <p class="mensaje-texto">${m.mensaje}</p>
         <div class="mensaje-acciones">
           ${!m.leido ? `<button class="btn-accion btn-leer" onclick="marcarLeido(${m.id})"><i class="fas fa-check"></i> Marcar como leído</button>` : ''}
-          <a href="mailto:${m.email}?subject=Re: ${m.asunto || 'Tu consulta en La Casa Baju'}" class="btn-accion btn-confirmar"><i class="fas fa-reply"></i> Responder</a>
+          <!-- Cambiado: Ahora ejecuta una función interna en lugar de mailto -->
+          <button class="btn-accion btn-confirmar" onclick="abrirRespuesta(${m.id})"><i class="fas fa-reply"></i> Responder</button>
         </div>
       </div>
     `).join('');
@@ -652,7 +679,7 @@
 
     async function marcarLeido(id) {
         try {
-            await fetch(`${API}/contacto/${id}/leido`, { method: 'PUT' });
+            await fetchConToken(`${API}/contacto/${id}/leido`, { method: 'PUT' });
             cargarMensajes(); cargarDashboard();
         } catch(e) { alert('Error'); }
     }
@@ -660,28 +687,37 @@
     // ── USUARIOS ──
     async function cargarUsuarios() {
         try {
-            const res = await fetch(`${API}/auth/usuarios`);
+            const res = await fetchConToken(`${API}/auth/usuarios`);
             const datos = await res.json();
-            document.getElementById('tablaUsuarios').innerHTML = datos.map(u => `
-      <tr>
-        <td><strong>#${u.id}</strong></td>
-        <td>${u.nombre} ${u.apellidos}</td>
-        <td>${u.email}</td>
-        <td>${u.telefono || '—'}</td>
-        <td><span class="badge badge-${u.rol.toLowerCase()}">${u.rol}</span></td>
-        <td><span class="badge ${u.activo ? 'badge-confirmada' : 'badge-cancelada'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
-        <td>${u.activo && u.rol !== 'ADMIN' ? `<button class="btn-accion btn-cancelar" onclick="desactivarUsuario(${u.id})">Desactivar</button>` : ''}</td>
-      </tr>
-    `).join('');
-        } catch(e) {
-            document.getElementById('tablaUsuarios').innerHTML = `<tr><td colspan="7" class="tabla-vacio"><i class="fas fa-exclamation-circle"></i> Error</td></tr>`;
+            const tbody = document.getElementById('tablaUsuarios');
+      if (datos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="tabla-vacio"><i class="fas fa-users-slash"></i> No hay usuarios registrados</td></tr>`;
+            return;
         }
+        tbody.innerHTML = datos.map(u => `
+            <tr>
+                <td><strong>#${u.id}</strong></td>
+                <td>${u.nombre} ${u.apellidos || ''}</td>
+                <td><i class="fas fa-envelope text-mut"></i> ${u.email}</td>
+                <td>${u.telefono || '—'}</td>
+                <td><span class="badge ${u.rol === 'ADMIN' ? 'badge-admin' : 'badge-cliente'}">${u.rol}</span></td>
+                <td>${formatFecha(u.fechaRegistro)}</td>
+                <td>
+                    <button class="btn-accion btn-eliminar" onclick="desactivarUsuario(${u.id})" title="Desactivar Usuario">
+                        <i class="fas fa-user-slash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        document.getElementById('tablaUsuarios').innerHTML = `<tr><td colspan="7" class="tabla-vacio"><i class="fas fa-exclamation-circle"></i> Error al cargar usuarios</td></tr>`;
+    }
     }
 
     async function desactivarUsuario(id) {
         if (!confirm('¿Desactivar este usuario?')) return;
         try {
-            await fetch(`${API}/auth/usuarios/${id}`, { method: 'DELETE' });
+            await fetchConToken(`${API}/auth/usuarios/${id}`, { method: 'DELETE' });
             cargarUsuarios();
         } catch(e) { alert('Error'); }
     }
@@ -703,6 +739,92 @@
 
     // ── INICIO ──
     cargarTodo();
+
+    // ── CERRAR SESSION ──
+    function cerrarSesion() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('nombre');
+        localStorage.removeItem('apellidos');
+        localStorage.removeItem('email');
+        localStorage.removeItem('rol');
+        window.location.href = 'login.html';
+    }
+    // ── LÓGICA DEL MODAL DE RESPUESTA ──
+    function abrirRespuesta(id) {
+        // Buscamos los datos completos del mensaje usando el ID
+        const msg = mensajesData.find(m => m.id === id);
+        if (!msg) return;
+
+        // Rellenamos los campos del modal
+        document.getElementById('replyMsgId').value = msg.id;
+        document.getElementById('replyEmail').textContent = msg.email;
+        document.getElementById('replyAsunto').value = msg.asunto ? `Re: ${msg.asunto}` : 'Re: Tu consulta en La Casa Baju';
+        document.getElementById('replyTexto').value = ''; // Limpiamos respuestas previas
+
+        // Mostramos el modal usando flexbox para centrarlo
+        document.getElementById('modalRespuesta').style.display = 'flex';
+    }
+
+    function cerrarModalRespuesta() {
+        document.getElementById('modalRespuesta').style.display = 'none';
+    }
+
+    async function enviarRespuesta() {
+        const id = document.getElementById('replyMsgId').value;
+        const email = document.getElementById('replyEmail').textContent;
+        const asunto = document.getElementById('replyAsunto').value;
+        const mensaje = document.getElementById('replyTexto').value;
+
+        if (!mensaje.trim()) {
+            alert('Por favor, escribe un mensaje antes de enviar.');
+            return;
+        }
+
+        try {
+            // Realizamos la petición POST a tu API local
+            // Nota: Asegúrate de que tu Backend tenga esta ruta habilitada (POST a /api/contacto/{id}/responder)
+            const res = await fetchConToken(`${API}/contacto/${id}/responder`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, asunto, mensaje })
+            });
+
+            if (res.ok) {
+                alert('¡Correo enviado con éxito!');
+                cerrarModalRespuesta();
+                marcarLeido(id); // Opcional: marca automáticamente como leído al responder
+            } else {
+                alert('El servidor rechazó el envío. Verifica tu backend.');
+            }
+        } catch(e) {
+            alert('Error de conexión. No se pudo contactar con la API.');
+        }
+    }
 </script>
+<!-- MODAL INTERNO DE RESPUESTA -->
+<div id="modalRespuesta" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:100; justify-content:center; align-items:center;">
+    <div style="background:var(--blanco); padding:2rem; border-radius:4px; width:90%; max-width:500px; box-shadow:0 2px 15px rgba(0,0,0,0.15);">
+        <h3 style="margin-bottom:1rem; font-family:'Playfair Display', serif; font-size:1.4rem;">Redactar Respuesta</h3>
+
+        <p style="font-size:0.85rem; color:var(--gris); margin-bottom:1rem;">Para: <strong id="replyEmail" style="color:var(--texto)"></strong></p>
+        <input type="hidden" id="replyMsgId">
+
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--gris); margin-bottom:0.3rem;">Asunto</label>
+            <input type="text" id="replyAsunto" style="width:100%; padding:0.6rem; border:1px solid var(--arena); border-radius:2px; font-family:'Jost', sans-serif; font-size:0.9rem; background:var(--blanco);">
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--gris); margin-bottom:0.3rem;">Mensaje de respuesta</label>
+            <textarea id="replyTexto" rows="6" placeholder="Escribe tu respuesta aquí..." style="width:100%; padding:0.6rem; border:1px solid var(--arena); border-radius:2px; font-family:'Jost', sans-serif; font-size:0.9rem; resize:vertical; background:var(--blanco);"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+            <button class="btn-sm btn-outline" onclick="cerrarModalRespuesta()">Cancelar</button>
+            <button class="btn-sm btn-primary" onclick="enviarRespuesta()"><i class="fas fa-paper-plane"></i> Enviar Correo</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

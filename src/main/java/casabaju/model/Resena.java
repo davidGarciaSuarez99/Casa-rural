@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -38,6 +39,7 @@ public class Resena {
     @Column(nullable = false)
     private Boolean aprobada = false; // el admin la aprueba antes de publicarse
 
+    @CreationTimestamp
     @Column(name = "creada_en", nullable = false, updatable = false)
-    private LocalDateTime creadaEn = LocalDateTime.now();
+    private LocalDateTime creadaEn;
 }

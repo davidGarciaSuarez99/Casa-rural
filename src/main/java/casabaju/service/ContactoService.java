@@ -15,6 +15,8 @@ public class ContactoService {
 
     // Guardar un mensaje nuevo del formulario de contacto
     public ContactoMensaje guardar(ContactoMensaje mensaje) {
+        if (mensaje.getLeido() == null)      mensaje.setLeido(false);
+        if (mensaje.getRespondido() == null)  mensaje.setRespondido(false);
         return contactoMensajeRepository.save(mensaje);
     }
 
@@ -34,5 +36,9 @@ public class ContactoService {
             .orElseThrow(() -> new RuntimeException("Mensaje no encontrado"));
         mensaje.setLeido(true);
         return contactoMensajeRepository.save(mensaje);
+    }
+    public ContactoMensaje obtenerPorId(Long id) {
+        // findById ya viene incluido de forma nativa en JpaRepository
+        return contactoMensajeRepository.findById(id).orElse(null);
     }
 }

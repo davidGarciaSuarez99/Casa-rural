@@ -23,8 +23,11 @@ public class ResenaService {
         return resenaRepository.findByAprobadaFalse();
     }
 
-    // Crear nueva reseña (queda pendiente de aprobación)
     public Resena crear(Resena resena) {
+        // Verificar que no exista ya una reseña para esta reserva
+        if (resenaRepository.existsByReservaId(resena.getReserva().getId())) {
+            throw new IllegalStateException("Ya existe una reseña para esta reserva");
+        }
         resena.setAprobada(false);
         return resenaRepository.save(resena);
     }
@@ -41,4 +44,8 @@ public class ResenaService {
     public void eliminar(Long id) {
         resenaRepository.deleteById(id);
     }
+
+    // ResenaService.java
+
+
 }

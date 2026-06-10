@@ -56,6 +56,7 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Resena> resenas;
 
+
     public enum Rol {
         CLIENTE, ADMIN
     }

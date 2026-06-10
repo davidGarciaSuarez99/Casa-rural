@@ -25,7 +25,14 @@ public class UsuarioService {
         }
         // Encriptar la contraseña antes de guardar
         usuario.setPasswordHash(passwordEncoder.encode(usuario.getPasswordHash()));
+
+
         usuario.setRol(Usuario.Rol.CLIENTE);
+        usuario.setActivo(true);
+
+
+        usuario.setCreadoEn(java.time.LocalDateTime.now());
+
         return usuarioRepository.save(usuario);
     }
 

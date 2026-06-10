@@ -11,4 +11,7 @@ public interface ContactoMensajeRepository extends JpaRepository<ContactoMensaje
 
     // Mensajes no leídos (para el panel de admin)
     List<ContactoMensaje> findByLeidoFalse();
+
+
+
 }

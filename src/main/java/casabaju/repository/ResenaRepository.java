@@ -14,4 +14,7 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
 
     // Reseñas pendientes de aprobar (para el panel de admin)
     List<Resena> findByAprobadaFalse();
+
+    // ResenaRepository.java
+    boolean existsByReservaId(Long reservaId);
 }

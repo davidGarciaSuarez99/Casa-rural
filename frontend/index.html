@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="auth.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -69,6 +70,64 @@
     .nav-btn:hover { background: var(--verde-med) !important; }
     nav.scrolled .nav-btn { background: var(--verde); color: #fff !important; }
 
+    /* ── USER DROPDOWN ── */
+    .nav-user-wrapper {
+      position: relative;
+    }
+    .nav-user-btn {
+      display: flex; align-items: center; gap: .5rem;
+      cursor: pointer; background: none; border: none; padding: 0;
+      font-family: 'Jost', sans-serif; font-size: .85rem;
+      font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--blanco); transition: color .3s;
+    }
+    nav.scrolled .nav-user-btn { color: var(--texto); }
+    .nav-user-btn:hover { color: var(--verde-cla) !important; }
+    .nav-user-btn i.fa-chevron-down {
+      font-size: .6rem; transition: transform .25s;
+    }
+    .nav-user-wrapper.open .nav-user-btn i.fa-chevron-down {
+      transform: rotate(180deg);
+    }
+    .nav-user-dropdown {
+      display: none;
+      position: absolute; top: calc(100% + .8rem); right: 0;
+      background: var(--blanco); border-radius: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.14);
+      min-width: 180px; overflow: hidden;
+      border: 1px solid var(--arena);
+      animation: dropdownIn .2s ease;
+    }
+    @keyframes dropdownIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .nav-user-wrapper.open .nav-user-dropdown { display: block; }
+    .nav-user-dropdown-header {
+      padding: .8rem 1.1rem;
+      font-size: .75rem; color: var(--gris);
+      letter-spacing: .08em; text-transform: uppercase;
+      border-bottom: 1px solid var(--arena);
+    }
+    .nav-user-dropdown a,
+    .nav-user-dropdown button {
+      display: flex; align-items: center; gap: .7rem;
+      width: 100%; padding: .75rem 1.1rem;
+      font-family: 'Jost', sans-serif; font-size: .85rem;
+      font-weight: 400; letter-spacing: .05em;
+      color: var(--texto); text-decoration: none;
+      background: none; border: none; cursor: pointer;
+      text-align: left; text-transform: none;
+      transition: background .2s, color .2s;
+    }
+    .nav-user-dropdown a:hover,
+    .nav-user-dropdown button:hover { background: var(--crema); color: var(--verde); }
+    .nav-user-dropdown .btn-logout {
+      border-top: 1px solid var(--arena);
+      color: #c0392b;
+    }
+    .nav-user-dropdown .btn-logout:hover { background: #fdf2f2; color: #c0392b; }
+
     /* ── HERO ── */
     .hero {
       height: 100vh; min-height: 650px;
@@ -80,8 +139,8 @@
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 110%, rgba(143,188,143,.18) 0%, transparent 70%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c4a' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+              radial-gradient(ellipse 80% 60% at 50% 110%, rgba(143,188,143,.18) 0%, transparent 70%),
+              url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c4a' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .hero-content { position: relative; z-index: 2; padding: 2rem; }
     .hero-tag {
@@ -420,6 +479,9 @@
     <li><a href="#entorno">Entorno</a></li>
     <li><a href="resenas.html">Reseñas</a></li>
     <li><a href="contacto.html">Contacto</a></li>
+    <li id="navUsuario">
+      <a href="login.html" style="border:1px solid rgba(255,255,255,.4); padding:.5rem 1.2rem; border-radius:2px;"><i class="fas fa-user"></i> Acceder</a>
+    </li>
     <li><a href="reservas.html" class="nav-btn">Reservar</a></li>
   </ul>
 </nav>
@@ -451,6 +513,11 @@
     <div class="dispon-group">
       <label><i class="fas fa-calendar-check"></i> Salida</label>
       <input type="date" id="fechaSalida" />
+    </div>
+
+    <div id="fechasOcupadasContenedor" style="margin: 1.5rem 0 0 0; font-size: 0.9rem; color: #c0392b; display: none; background: #fdf2f2; padding: 0.8rem; border-left: 4px solid #c0392b; border-radius: 4px; grid-column: 1 / -1; width: 100%;">
+      <strong>Fechas ya reservadas (No disponibles):</strong>
+      <ul id="listaFechasOcupadas" style="margin-left: 1.2rem; margin-top: 0.4rem; list-style-type: disc; text-align: left;"></ul>
     </div>
     <div class="dispon-group">
       <label><i class="fas fa-users"></i> Personas</label>
@@ -583,39 +650,7 @@
   </div>
   <div class="resenas-grid" id="resenasGrid">
     <!-- Se rellena con JS desde la API -->
-    <div class="resena-card reveal">
-      <div class="resena-stars">★★★★★</div>
-      <p class="resena-texto">"Un lugar mágico para desconectar de la ciudad. La casa es preciosa y la zona es increíble."</p>
-      <div class="resena-autor">
-        <div class="resena-avatar">MG</div>
-        <div>
-          <div class="resena-nombre">María García</div>
-          <div class="resena-fecha">Agosto 2024</div>
-        </div>
-      </div>
-    </div>
-    <div class="resena-card reveal">
-      <div class="resena-stars">★★★★★</div>
-      <p class="resena-texto">"Repetiremos sin duda. La atención fue perfecta y las instalaciones impecables."</p>
-      <div class="resena-autor">
-        <div class="resena-avatar">JL</div>
-        <div>
-          <div class="resena-nombre">Juan López</div>
-          <div class="resena-fecha">Julio 2024</div>
-        </div>
-      </div>
-    </div>
-    <div class="resena-card reveal">
-      <div class="resena-stars">★★★★☆</div>
-      <p class="resena-texto">"Tranquilidad absoluta. El desayuno casero es una de las cosas que más nos gustó."</p>
-      <div class="resena-autor">
-        <div class="resena-avatar">AR</div>
-        <div>
-          <div class="resena-nombre">Ana Rodríguez</div>
-          <div class="resena-fecha">Junio 2024</div>
-        </div>
-      </div>
-    </div>
+
   </div>
 </section>
 
@@ -665,27 +700,27 @@
 </div>
 
 <script>
-const API = 'http://localhost:8080/api';
+  const API = 'http://localhost:8080/api';
 
-// ── NAV scroll effect ──
-window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
-});
+  // ── NAV scroll effect ──
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+  });
 
-// ── Reveal on scroll ──
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  // ── Reveal on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── Cargar alojamientos desde la API ──
-async function cargarAlojamientos() {
-  try {
-    const res = await fetch(`${API}/alojamientos`);
-    const datos = await res.json();
-    const grid = document.getElementById('alojamientosGrid');
-    const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
-    grid.innerHTML = datos.map((a, i) => `
+  // ── Cargar alojamientos desde la API ──
+  async function cargarAlojamientos() {
+    try {
+      const res = await fetchConToken(`${API}/alojamientos`);
+      const datos = await res.json();
+      const grid = document.getElementById('alojamientosGrid');
+      const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
+      grid.innerHTML = datos.map((a, i) => `
       <div class="card reveal">
         <div class="card-img">
           <i class="fas ${iconos[i] || 'fa-home'} card-img-icon"></i>
@@ -706,84 +741,284 @@ async function cargarAlojamientos() {
         </div>
       </div>
     `).join('');
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-  } catch (e) {
-    console.warn('API no disponible, mostrando datos de ejemplo');
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    } catch (e) {
+      console.warn('API no disponible, mostrando datos de ejemplo');
+    }
   }
-}
 
-// ── Cargar reseñas desde la API ──
-async function cargarResenas() {
-  try {
-    const res = await fetch(`${API}/resenas`);
-    const datos = await res.json();
-    if (datos.length === 0) return;
+  // ── Cargar reseñas desde la API ──
+  async function cargarResenas() {
     const grid = document.getElementById('resenasGrid');
-    grid.innerHTML = datos.slice(0, 3).map(r => {
-      const estrellas = '★'.repeat(r.puntuacion) + '☆'.repeat(5 - r.puntuacion);
-      const iniciales = r.usuario ? (r.usuario.nombre[0] + r.usuario.apellidos[0]) : 'HU';
-      const fecha = new Date(r.creadaEn).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-      return `
-        <div class="resena-card reveal">
+    if (!grid) return;
+
+    try {
+      const res = await fetchConToken(`${API}/resenas`);
+      if (!res.ok) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:red; padding:2rem;">
+                            <p>⚠️ Error del backend: Código ${res.status}</p>
+                          </div>`;
+        return;
+      }
+
+      const datos = await res.json();
+      if (!datos || datos.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--gris); padding:2rem;">
+                            <p>No hay reseñas públicas en la base de datos.</p>
+                          </div>`;
+        return;
+      }
+
+      grid.innerHTML = datos.slice(0, 3).map(r => {
+        const puntos = r.puntuacion || 5;
+        const estrellas = '★'.repeat(puntos) + '☆'.repeat(Math.max(0, 5 - puntos));
+        const nombreAutor = r.usuario?.nombre || r.nombreUsuario || 'Huésped';
+
+        return `
+        <div class="resena-card reveal visible">
           <div class="resena-stars">${estrellas}</div>
-          <p class="resena-texto">"${r.comentario}"</p>
+          <p class="resena-texto">"${r.comentario || 'Sin comentario'}"</p>
           <div class="resena-autor">
-            <div class="resena-avatar">${iniciales}</div>
+            <div class="resena-avatar">${nombreAutor[0].toUpperCase()}</div>
             <div>
-              <div class="resena-nombre">${r.usuario ? r.usuario.nombre : 'Huésped'}</div>
-              <div class="resena-fecha">${fecha}</div>
+              <div class="resena-nombre">${nombreAutor}</div>
             </div>
           </div>
         </div>`;
-    }).join('');
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-  } catch (e) {
-    console.warn('No se pudieron cargar las reseñas de la API');
+      }).join('');
+
+    } catch (e) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:orange; padding:2rem;">
+                          <p>❌ No se pudo conectar con la API para las reseñas.</p>
+                        </div>`;
+    }
   }
-}
+  // ── Cargar reseñas desde la API ──
+  async function cargarResenas() {
+    const grid = document.getElementById('resenasGrid');
+    if (!grid) return;
 
-// ── Comprobar disponibilidad ──
-async function comprobarDisponibilidad() {
-  const entrada = document.getElementById('fechaEntrada').value;
-  const salida  = document.getElementById('fechaSalida').value;
-  const result  = document.getElementById('disponResult');
+    try {
+      const res = await fetchConToken(`${API}/resenas`);
 
-  if (!entrada || !salida) {
+      if (!res.ok) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:red; padding:2rem;">
+                            <p>⚠️ Error del backend: Código ${res.status}</p>
+                          </div>`;
+        return;
+      }
+
+      const datos = await res.json();
+
+      if (!datos || datos.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--gris); padding:2rem;">
+                            <p>No hay reseñas públicas en la base de datos.</p>
+                          </div>`;
+        return;
+      }
+
+      grid.innerHTML = datos.slice(0, 3).map(r => {
+        const puntos = r.puntuacion || 5;
+        const estrellas = '★'.repeat(puntos) + '☆'.repeat(Math.max(0, 5 - puntos));
+        const nombreAutor = r.usuario?.nombre || r.nombreUsuario || 'Huésped';
+
+        return `
+        <div class="resena-card reveal visible">
+          <div class="resena-stars">${estrellas}</div>
+          <p class="resena-texto">"${r.comentario || 'Sin comentario'}"</p>
+          <div class="resena-autor">
+            <div class="resena-avatar">${nombreAutor[0].toUpperCase()}</div>
+            <div>
+              <div class="resena-nombre">${nombreAutor}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+    } catch (e) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:orange; padding:2rem;">
+                          <p>❌ No se pudo conectar con la API para las reseñas.</p>
+                        </div>`;
+    }
+  }
+  // Función para traer desde la API las fechas ocupadas y listarlas
+  async function cargarFechasOcupadas() {
+    try {
+      const res = await fetch(`${API}/reservas/ocupadas`);
+      if (!res.ok) return;
+
+      const reservas = await res.json();
+      const lista = document.getElementById('listaFechasOcupadas');
+      const contenedor = document.getElementById('fechasOcupadasContenedor');
+
+      if (!reservas || reservas.length === 0) return;
+
+      lista.innerHTML = '';
+      reservas.forEach(reserva => {
+        const entrada = new Date(reserva.fechaEntrada).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const salida = new Date(reserva.fechaSalida).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        const li = document.createElement('li');
+        li.textContent = `Del ${entrada} al ${salida}`;
+        lista.appendChild(li);
+      });
+
+      contenedor.style.display = 'block';
+      window.fechasBloqueadas = reservas;
+
+    } catch (e) {
+      console.warn("No se pudieron cargar las fechas de ocupación.");
+    }
+  }
+
+  // Validación activa: si eligen un rango ocupado, avisa de las fechas específicas alquiladas y limpia los inputs
+  function verificarFechaBloqueada() {
+    const entradaVal = document.getElementById('fechaEntrada').value;
+    const salidaVal = document.getElementById('fechaSalida').value;
+
+    // Solo validamos cuando el usuario ha rellenado AMBAS fechas (el rango completo)
+    if (!entradaVal || !salidaVal || !window.fechasBloqueadas) return;
+
+    const inicioSel = new Date(entradaVal);
+    const finSel = new Date(salidaVal);
+
+    if (inicioSel > finSel) return; // Si la entrada es posterior a la salida, lo maneja el navegador
+
+    // Recorremos las reservas para ver cuál se cruza con el rango elegido
+    for (let reserva of window.fechasBloqueadas) {
+      const desde = new Date(reserva.fechaEntrada);
+      const hasta = new Date(reserva.fechaSalida);
+
+      // Comprobamos si el rango elegido se solapa con esta reserva existente
+      if (inicioSel <= hasta && finSel >= desde) {
+        // Formateamos las fechas conflictivas para decírselo de forma clara
+        const entradaConflicto = desde.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const salidaConflicto = hasta.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        // Mensaje personalizado detallando los días que ya están alquilados
+        alert(`Lo sentimos, esas fechas no están disponibles porque la casa rural ya está alquilada del ${entradaConflicto} al ${salidaConflicto}. Por favor, prueba con otras fechas.`);
+
+        // Vaciamos los campos para que vuelva a elegir correctamente
+        document.getElementById('fechaEntrada').value = '';
+        document.getElementById('fechaSalida').value = '';
+        return;
+      }
+    }
+  }
+
+  // ── Comprobar disponibilidad ──
+  async function comprobarDisponibilidad() {
+    const entrada = document.getElementById('fechaEntrada').value;
+    const salida  = document.getElementById('fechaSalida').value;
+    const result  = document.getElementById('disponResult');
+
+    if (!entrada || !salida) {
+      result.style.display = 'block';
+      result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> Por favor selecciona las fechas de entrada y salida.</span>';
+      return;
+    }
+    if (entrada >= salida) {
+      result.style.display = 'block';
+      result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> La fecha de salida debe ser posterior a la de entrada.</span>';
+      return;
+    }
+
     result.style.display = 'block';
-    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> Por favor selecciona las fechas de entrada y salida.</span>';
-    return;
+    result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
+
+    try {
+      const res = await fetchConToken(`${API}/reservas/disponibilidad?alojamientoId=1&entrada=${entrada}&salida=${salida}`);
+      const disponible = await res.json();
+
+      if (disponible) {
+        result.innerHTML = `<span class="disponible"><i class="fas fa-check-circle"></i> ¡Hay disponibilidad para esas fechas! <a href="reservas.html?entrada=${entrada}&salida=${salida}" style="color:var(--verde-med); margin-left:.5rem;">Reservar ahora →</a></span>`;
+      } else {
+        // Mensaje por defecto si no encuentra el cruce exacto en memoria
+        let mensajeErrorDetallado = "Lo sentimos, esas fechas no están disponibles. Prueba con otras fechas.";
+
+        // Buscamos con qué reserva guardada en memoria se está pisando
+        if (window.fechasBloqueadas) {
+          const inicioSel = new Date(entrada);
+          const finSel = new Date(salida);
+
+          for (let reserva of window.fechasBloqueadas) {
+            const desde = new Date(reserva.fechaEntrada);
+            const hasta = new Date(reserva.fechaSalida);
+
+            if (inicioSel <= hasta && finSel >= desde) {
+              const entradaConflicto = desde.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              const salidaConflicto = hasta.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              mensajeErrorDetallado = `Lo sentimos, la casa ya está alquilada del ${entradaConflicto} al ${salidaConflicto}.`;
+              break;
+            }
+          }
+        }
+
+        result.innerHTML = `<span class="no-disponible"><i class="fas fa-times-circle"></i> ${mensajeErrorDetallado}</span>`;
+      }
+    } catch(e) {
+      result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-triangle"></i> No se pudo conectar con el servidor.</span>';
+    }
   }
-  if (entrada >= salida) {
-    result.style.display = 'block';
-    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> La fecha de salida debe ser posterior a la de entrada.</span>';
-    return;
+
+  // Fechas mínimas (hoy)
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('fechaEntrada').min = hoy;
+  document.getElementById('fechaSalida').min = hoy;
+  document.getElementById('fechaEntrada').addEventListener('change', e => {
+    document.getElementById('fechaSalida').min = e.target.value;
+  });
+
+  // ── Comprobar sesión en el navbar ──
+  function actualizarNavbar() {
+    const nombre = localStorage.getItem('nombre');
+    const rol    = localStorage.getItem('rol');
+    const el     = document.getElementById('navUsuario');
+    if (nombre) {
+      el.className = 'nav-user-wrapper';
+      el.innerHTML = `
+      <button class="nav-user-btn" onclick="toggleUserMenu(event)">
+        <i class="fas fa-user"></i> ${nombre}
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="nav-user-dropdown">
+        <div class="nav-user-dropdown-header">Mi cuenta</div>
+        ${rol === 'ADMIN' ? `<a href="admin.html"><i class="fas fa-tools"></i> Panel admin</a>` : ''}
+        <a href="reservas.html"><i class="fas fa-calendar-alt"></i> Mis reservas</a>
+        <button class="btn-logout" onclick="AUTH.cerrarSesion()">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </button>
+      </div>`;
+    }
   }
 
-  result.style.display = 'block';
-  result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
-
-  try {
-    const res = await fetch(`${API}/reservas/disponibilidad?alojamientoId=1&entrada=${entrada}&salida=${salida}`);
-    const disponible = await res.json();
-    result.innerHTML = disponible
-      ? `<span class="disponible"><i class="fas fa-check-circle"></i> ¡Hay disponibilidad para esas fechas! <a href="reservas.html?entrada=${entrada}&salida=${salida}" style="color:var(--verde-med); margin-left:.5rem;">Reservar ahora →</a></span>`
-      : `<span class="no-disponible"><i class="fas fa-times-circle"></i> Lo sentimos, esas fechas no están disponibles. Prueba con otras fechas.</span>`;
-  } catch(e) {
-    result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-triangle"></i> No se pudo conectar con el servidor.</span>';
+  function toggleUserMenu(e) {
+    e.stopPropagation();
+    document.getElementById('navUsuario').classList.toggle('open');
   }
-}
 
-// Fechas mínimas (hoy)
-const hoy = new Date().toISOString().split('T')[0];
-document.getElementById('fechaEntrada').min = hoy;
-document.getElementById('fechaSalida').min = hoy;
-document.getElementById('fechaEntrada').addEventListener('change', e => {
-  document.getElementById('fechaSalida').min = e.target.value;
-});
+  // Cerrar el dropdown al hacer clic fuera
+  document.addEventListener('click', () => {
+    const w = document.getElementById('navUsuario');
+    if (w) w.classList.remove('open');
+  });
 
-// Inicializar
-cargarAlojamientos();
-cargarResenas();
+  // Inicializar
+  cargarAlojamientos();
+  actualizarNavbar();
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // El index es 100% público, cargamos las reseñas y las fechas ocupadas
+    cargarResenas();
+    cargarFechasOcupadas();
+
+    // Escuchamos los cambios en AMBOS inputs para validar el rango completo de la reserva
+    const inputEntrada = document.getElementById('fechaEntrada');
+    const inputSalida = document.getElementById('fechaSalida');
+
+    if (inputEntrada) inputEntrada.addEventListener('change', verificarFechaBloqueada);
+    if (inputSalida) inputSalida.addEventListener('change', verificarFechaBloqueada);
+  });
 </script>
 </body>
 </html>
