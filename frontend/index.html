@@ -70,6 +70,30 @@
     .nav-btn:hover { background: var(--verde-med) !important; }
     nav.scrolled .nav-btn { background: var(--verde); color: #fff !important; }
 
+
+    .reserva-item {
+      border: 1px solid var(--arena);
+      border-radius: 4px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      background: var(--crema);
+    }
+    .reserva-item-info { display: flex; flex-direction: column; gap: .4rem; }
+    .reserva-item-nombre { font-family: 'Playfair Display', serif; font-size: 1.05rem; }
+    .reserva-item-fechas { font-size: .83rem; color: var(--gris); }
+    .reserva-item-precio { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--verde); text-align:right; }
+    .reserva-item-precio small { font-family: 'Jost', sans-serif; font-size: .72rem; color: var(--gris); display:block; }
+    .badge-r { padding:.25rem .7rem; border-radius:12px; font-size:.7rem; font-weight:500; text-transform:uppercase; letter-spacing:.05em; display:inline-block; margin-top:.3rem; }
+    .badge-r.PENDIENTE  { background:rgba(230,126,34,.12); color:#e67e22; }
+    .badge-r.CONFIRMADA { background:rgba(39,174,96,.12);  color:#27ae60; }
+    .badge-r.CANCELADA  { background:rgba(192,57,43,.12);  color:#c0392b; }
+    .badge-r.COMPLETADA { background:rgba(41,128,185,.12); color:#2980b9; }
+
+
     /* ── USER DROPDOWN ── */
     .nav-user-wrapper {
       position: relative;
@@ -844,7 +868,7 @@
   // Función para traer desde la API las fechas ocupadas y listarlas
   async function cargarFechasOcupadas() {
     try {
-      const res = await fetch(`${API}/reservas/ocupadas`);
+      const res = await fetchConToken(`${API}/reservas/ocupadas`);
       if (!res.ok) return;
 
       const reservas = await res.json();
@@ -1019,6 +1043,86 @@
     if (inputEntrada) inputEntrada.addEventListener('change', verificarFechaBloqueada);
     if (inputSalida) inputSalida.addEventListener('change', verificarFechaBloqueada);
   });
+
+
+  async function abrirModalReservas() {
+    document.getElementById('modalMisReservas').style.display = 'flex';
+    const body = document.getElementById('misReservasBody');
+    const userId = localStorage.getItem('userId');
+
+    body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gris);"><i class="fas fa-spinner fa-spin" style="font-size:2rem;"></i></div>';
+
+    try {
+      const res = await fetchConToken(`${API}/reservas/usuario/${userId}`);
+      const datos = await res.json();
+
+      if (!datos.length) {
+        body.innerHTML = `
+        <div style="text-align:center; padding:3rem; color:var(--gris);">
+          <i class="fas fa-calendar-times" style="font-size:2.5rem; display:block; margin-bottom:1rem; opacity:.3;"></i>
+          <p>Aún no tienes reservas.</p>
+          <a href="reservas.html" style="color:var(--verde-med); font-size:.9rem; margin-top:.8rem; display:inline-block;">
+            Hacer una reserva →
+          </a>
+        </div>`;
+        return;
+      }
+
+      body.innerHTML = datos.map(r => {
+        const entrada = new Date(r.fechaEntrada).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
+        const salida  = new Date(r.fechaSalida).toLocaleDateString('es-ES',  {day:'2-digit', month:'short', year:'numeric'});
+        const aloj    = r.alojamiento?.nombre || '—';
+        return `
+        <div class="reserva-item">
+          <div class="reserva-item-info">
+            <span class="reserva-item-nombre">${aloj}</span>
+            <span class="reserva-item-fechas"><i class="fas fa-calendar-alt" style="color:var(--verde-cla); margin-right:.4rem;"></i>${entrada} → ${salida}</span>
+            <span class="badge-r ${r.estado}">${r.estado}</span>
+          </div>
+          <div class="reserva-item-precio">
+            ${r.precioTotal}€
+            <small>precio total</small>
+          </div>
+        </div>`;
+      }).join('');
+
+    } catch(e) {
+      body.innerHTML = '<p style="text-align:center; color:#c0392b; padding:2rem;"><i class="fas fa-exclamation-circle"></i> No se pudo cargar. Comprueba que el servidor está arrancado.</p>';
+    }
+  }
+
+  function cerrarModalReservas() {
+    document.getElementById('modalMisReservas').style.display = 'none';
+  }
+
+  // Cerrar al hacer clic fuera del modal
+  document.getElementById('modalMisReservas').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalReservas();
+  });
 </script>
+<!-- MODAL MIS RESERVAS -->
+<div id="modalMisReservas" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; justify-content:center; align-items:center;">
+  <div style="background:var(--blanco); border-radius:4px; width:90%; max-width:700px; max-height:80vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,.3);">
+
+    <!-- Cabecera -->
+    <div style="background:var(--verde); padding:1.5rem 2rem; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="font-family:'Playfair Display',serif; color:#fff; font-size:1.4rem;">Mis reservas</h3>
+        <p style="color:rgba(255,255,255,.6); font-size:.8rem; margin-top:.2rem;">Historial de tus estancias</p>
+      </div>
+      <button onclick="cerrarModalReservas()" style="background:none; border:none; color:rgba(255,255,255,.7); font-size:1.4rem; cursor:pointer; padding:.3rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Cuerpo scrollable -->
+    <div id="misReservasBody" style="overflow-y:auto; padding:1.5rem; flex:1;">
+      <div style="text-align:center; padding:2rem; color:var(--gris);">
+        <i class="fas fa-spinner fa-spin" style="font-size:2rem;"></i>
+      </div>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
