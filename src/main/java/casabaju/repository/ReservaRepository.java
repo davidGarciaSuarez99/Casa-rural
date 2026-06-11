@@ -28,4 +28,12 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     boolean existeSolapamiento(@Param("alojamientoId") Long alojamientoId,
                                @Param("fechaEntrada") LocalDate fechaEntrada,
                                @Param("fechaSalida") LocalDate fechaSalida);
+
+
+// Comprueba si HAY ALGUNA reserva activa (en cualquier alojamiento) en ese rango
+@Query("SELECT COUNT(r) > 0 FROM Reserva r WHERE r.estado != 'CANCELADA' " +
+        "AND r.fechaEntrada < :fechaSalida AND r.fechaSalida > :fechaEntrada")
+boolean existeCualquierSolapamiento(@Param("fechaEntrada") LocalDate fechaEntrada,
+                                    @Param("fechaSalida") LocalDate fechaSalida);
+
 }

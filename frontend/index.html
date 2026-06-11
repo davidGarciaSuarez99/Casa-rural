@@ -131,7 +131,11 @@
     /* ── HERO ── */
     .hero {
       height: 100vh; min-height: 650px;
-      background: linear-gradient(160deg, #1a2e1a 0%, #2d4a2d 40%, #3d5c3d 100%);
+      background:
+              linear-gradient(160deg, rgba(26,46,26,.75) 0%, rgba(45,74,45,.55) 40%, rgba(61,92,61,.5) 100%),
+              url('img/valle.jpg');
+      background-size: cover;
+      background-position: center;
       display: flex; align-items: center; justify-content: center;
       text-align: center; position: relative; overflow: hidden;
     }
@@ -327,9 +331,11 @@
     .entorno-lista li i { color: var(--verde-cla); width: 16px; }
     .entorno-mapa {
       background: linear-gradient(135deg, #1a3d1a, #2d5a2d);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 5rem; color: rgba(255,255,255,.1);
       position: relative; overflow: hidden;
+    }
+    .entorno-mapa iframe {
+      position: relative; z-index: 2;
+      display: block;
     }
     .entorno-mapa::after {
       content: '';
@@ -515,9 +521,11 @@
       <input type="date" id="fechaSalida" />
     </div>
 
-    <div id="fechasOcupadasContenedor" style="margin: 1.5rem 0 0 0; font-size: 0.9rem; color: #c0392b; display: none; background: #fdf2f2; padding: 0.8rem; border-left: 4px solid #c0392b; border-radius: 4px; grid-column: 1 / -1; width: 100%;">
-      <strong>Fechas ya reservadas (No disponibles):</strong>
-      <ul id="listaFechasOcupadas" style="margin-left: 1.2rem; margin-top: 0.4rem; list-style-type: disc; text-align: left;"></ul>
+    <div class="dispon-group">
+      <label><i class="fas fa-home"></i> Alojamiento</label>
+      <select id="alojamientoSeleccionado">
+        <option value="">Cargando...</option>
+      </select>
     </div>
     <div class="dispon-group">
       <label><i class="fas fa-users"></i> Personas</label>
@@ -578,6 +586,21 @@
   </div>
 </section>
 
+<!-- MODAL GALERÍA -->
+<div id="galeriaModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:200; align-items:center; justify-content:center; flex-direction:column;">
+  <button onclick="cerrarGaleria()" style="position:absolute; top:1.5rem; right:2rem; background:none; border:none; color:#fff; font-size:2rem; cursor:pointer;">
+    <i class="fas fa-times"></i>
+  </button>
+  <button onclick="cambiarImagenGaleria(-1)" style="position:absolute; left:1.5rem; background:none; border:none; color:#fff; font-size:2.5rem; cursor:pointer;">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <img id="galeriaImg" src="" alt="" style="max-width:85vw; max-height:80vh; border-radius:4px; box-shadow:0 10px 40px rgba(0,0,0,.5);">
+  <button onclick="cambiarImagenGaleria(1)" style="position:absolute; right:1.5rem; background:none; border:none; color:#fff; font-size:2.5rem; cursor:pointer;">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  <div id="galeriaContador" style="color:rgba(255,255,255,.7); margin-top:1rem; font-size:.85rem; letter-spacing:.1em;"></div>
+</div>
+
 <!-- SERVICIOS -->
 <section class="section servicios-section" id="servicios">
   <div style="text-align:center; margin-bottom: 0;" class="reveal">
@@ -634,10 +657,14 @@
     </ul>
   </div>
   <div class="entorno-mapa">
-    <div class="mapa-placeholder">
-      <i class="fas fa-map-marked-alt"></i>
-      <p>Mapa interactivo<br>próximamente</p>
-    </div>
+    <iframe
+            src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1408.8155171541298!2d-4.884434034891018!3d43.37297069211395!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2ses!4v1781125463190!5m2!1ses!2ses"
+            width="100%" height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
   </div>
 </section>
 
@@ -767,42 +794,109 @@
     document.getElementById('modalReservasOverlay').style.display = 'none';
   }
 
+  // ── GALERÍA DE IMÁGENES POR ALOJAMIENTO ──
+  const GALERIAS = {
+    'casa completa': [
+      'img/casa-completa.jpg',
+      'img/casa-completa-2.jpg',
+      'img/casa-completa-3.jpg',
+      'img/casa-completa-4.jpg'
+    ],
+    'habitación roble': [
+      'img/habitacion-roble.jpg'
+    ],
+    'habitación pino': [
+      'img/habitacion-pino.jpg'
+    ]
+    // añade más entradas según el nombre de cada alojamiento
+  };
+
+  let galeriaActual = [];
+  let galeriaIndex = 0;
+
+  function abrirGaleria(nombreAlojamiento) {
+    const clave = nombreAlojamiento.toLowerCase().trim();
+    const imagenes = GALERIAS[clave];
+    if (!imagenes || imagenes.length === 0) return;
+
+    galeriaActual = imagenes;
+    galeriaIndex = 0;
+    mostrarImagenGaleria();
+    document.getElementById('galeriaModal').style.display = 'flex';
+  }
+
+  function cerrarGaleria() {
+    document.getElementById('galeriaModal').style.display = 'none';
+  }
+
+  function cambiarImagenGaleria(dir) {
+    galeriaIndex = (galeriaIndex + dir + galeriaActual.length) % galeriaActual.length;
+    mostrarImagenGaleria();
+  }
+
+  function mostrarImagenGaleria() {
+    document.getElementById('galeriaImg').src = galeriaActual[galeriaIndex];
+    document.getElementById('galeriaContador').textContent = `${galeriaIndex + 1} / ${galeriaActual.length}`;
+  }
+
+  // Cerrar haciendo clic fuera de la imagen
+  document.getElementById('galeriaModal').addEventListener('click', (e) => {
+    if (e.target.id === 'galeriaModal') cerrarGaleria();
+  });
 
   // ── Cargar alojamientos desde la API ──
   async function cargarAlojamientos() {
     try {
       const res = await fetchConToken(`${API}/alojamientos`);
       const datos = await res.json();
+
+      const selectAloj = document.getElementById('alojamientoSeleccionado');
+      if (selectAloj) {
+        selectAloj.innerHTML = datos.map(a =>
+                `<option value="${a.id}">${a.nombre}</option>`
+        ).join('');
+      }
+
       const grid = document.getElementById('alojamientosGrid');
       const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
-      grid.innerHTML = datos.map((a, i) => `
-      <div class="card reveal">
-        <div class="card-img">
-          <i class="fas ${iconos[i] || 'fa-home'} card-img-icon"></i>
-          <span class="card-badge">Disponible</span>
-        </div>
-        <div class="card-body">
-          <h3 class="card-title">${a.nombre}</h3>
-          <p class="card-desc">${a.descripcion || ''}</p>
-          <div class="card-meta">
-            <span><i class="fas fa-users"></i> Hasta ${a.capacidad} personas</span>
-            <span><i class="fas fa-bed"></i> ${a.numCamas} cama${a.numCamas > 1 ? 's' : ''}</span>
-            ${a.metros2 ? `<span><i class="fas fa-vector-square"></i> ${a.metros2} m²</span>` : ''}
-          </div>
-          <div class="card-footer">
-            <div class="card-price">${a.precioNoche}€ <span>/ noche</span></div>
-            <a href="reservas.html?id=${a.id}" class="card-btn">Reservar</a>
-          </div>
-        </div>
-      </div>
-    `).join('');
+      grid.innerHTML = datos.map((a, i) => {
+        const tieneGaleria = !!GALERIAS[a.nombre.toLowerCase().trim()];
+        const estiloImg = tieneGaleria
+                ? `style="background-image: url('${GALERIAS[a.nombre.toLowerCase().trim()][0]}'); background-size: cover; background-position: center; cursor: pointer;"`
+                : '';
+        const clickAction = tieneGaleria
+                ? `onclick="abrirGaleria('${a.nombre.replace(/'/g, "\\'")}')"`
+                : '';
+
+        return `
+            <div class="card reveal">
+              <div class="card-img" ${estiloImg} ${clickAction}>
+                ${!tieneGaleria ? `<i class="fas ${iconos[i] || 'fa-home'} card-img-icon"></i>` : ''}
+                <span class="card-badge">Disponible</span>
+                ${tieneGaleria ? `<span style="position:absolute; bottom:.8rem; right:1rem; background:rgba(0,0,0,.5); color:#fff; font-size:.72rem; padding:.3rem .7rem; border-radius:2px;"><i class="fas fa-images"></i> Ver fotos</span>` : ''}
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">${a.nombre}</h3>
+                <p class="card-desc">${a.descripcion || ''}</p>
+                <div class="card-meta">
+                  <span><i class="fas fa-users"></i> Hasta ${a.capacidad} personas</span>
+                  <span><i class="fas fa-bed"></i> ${a.numCamas} cama${a.numCamas > 1 ? 's' : ''}</span>
+                  ${a.metros2 ? `<span><i class="fas fa-vector-square"></i> ${a.metros2} m²</span>` : ''}
+                </div>
+                <div class="card-footer">
+                  <div class="card-price">${a.precioNoche}€ <span>/ noche</span></div>
+                  <a href="reservas.html?id=${a.id}" class="card-btn">Reservar</a>
+                </div>
+              </div>
+            </div>`;
+      }).join('');
+
       document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     } catch (e) {
       console.warn('API no disponible, mostrando datos de ejemplo');
     }
   }
 
-  // ── Cargar reseñas desde la API ──
   // ── Cargar reseñas desde la API y calcular Valoración Media ──
   async function cargarResenas() {
     const grid = document.getElementById('resenasGrid');
@@ -866,125 +960,19 @@
                         </div>`;
     }
   }
-  // ── Cargar reseñas desde la API ──
-  async function cargarResenas() {
-    const grid = document.getElementById('resenasGrid');
-    if (!grid) return;
-
-    try {
-      const res = await fetchConToken(`${API}/resenas`);
-
-      if (!res.ok) {
-        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:red; padding:2rem;">
-                            <p>⚠️ Error del backend: Código ${res.status}</p>
-                          </div>`;
-        return;
-      }
-
-      const datos = await res.json();
-
-      if (!datos || datos.length === 0) {
-        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--gris); padding:2rem;">
-                            <p>No hay reseñas públicas en la base de datos.</p>
-                          </div>`;
-        return;
-      }
-
-      grid.innerHTML = datos.slice(0, 3).map(r => {
-        const puntos = r.puntuacion || 5;
-        const estrellas = '★'.repeat(puntos) + '☆'.repeat(Math.max(0, 5 - puntos));
-        const nombreAutor = r.usuario?.nombre || r.nombreUsuario || 'Huésped';
-
-        return `
-        <div class="resena-card reveal visible">
-          <div class="resena-stars">${estrellas}</div>
-          <p class="resena-texto">"${r.comentario || 'Sin comentario'}"</p>
-          <div class="resena-autor">
-            <div class="resena-avatar">${nombreAutor[0].toUpperCase()}</div>
-            <div>
-              <div class="resena-nombre">${nombreAutor}</div>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-
-    } catch (e) {
-      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:orange; padding:2rem;">
-                          <p>No se pudo conectar con la API para las reseñas.</p>
-                        </div>`;
-    }
-  }
-  // Función para traer desde la API las fechas ocupadas y listarlas
-  async function cargarFechasOcupadas() {
-    try {
-      const res = await fetch(`${API}/reservas/ocupadas`);
-      if (!res.ok) return;
-
-      const reservas = await res.json();
-      const lista = document.getElementById('listaFechasOcupadas');
-      const contenedor = document.getElementById('fechasOcupadasContenedor');
-
-      if (!reservas || reservas.length === 0) return;
-
-      lista.innerHTML = '';
-      reservas.forEach(reserva => {
-        const entrada = new Date(reserva.fechaEntrada).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const salida = new Date(reserva.fechaSalida).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-        const li = document.createElement('li');
-        li.textContent = `Del ${entrada} al ${salida}`;
-        lista.appendChild(li);
-      });
-
-      contenedor.style.display = 'block';
-      window.fechasBloqueadas = reservas;
-
-    } catch (e) {
-      console.warn("No se pudieron cargar las fechas de ocupación.");
-    }
-  }
-
-  // Validación activa: si eligen un rango ocupado, avisa de las fechas específicas alquiladas y limpia los inputs
-  function verificarFechaBloqueada() {
-    const entradaVal = document.getElementById('fechaEntrada').value;
-    const salidaVal = document.getElementById('fechaSalida').value;
-
-    // Solo validamos cuando el usuario ha rellenado AMBAS fechas (el rango completo)
-    if (!entradaVal || !salidaVal || !window.fechasBloqueadas) return;
-
-    const inicioSel = new Date(entradaVal);
-    const finSel = new Date(salidaVal);
-
-    if (inicioSel > finSel) return; // Si la entrada es posterior a la salida, lo maneja el navegador
-
-    // Recorremos las reservas para ver cuál se cruza con el rango elegido
-    for (let reserva of window.fechasBloqueadas) {
-      const desde = new Date(reserva.fechaEntrada);
-      const hasta = new Date(reserva.fechaSalida);
-
-      // Comprobamos si el rango elegido se solapa con esta reserva existente
-      if (inicioSel <= hasta && finSel >= desde) {
-        // Formateamos las fechas conflictivas para decírselo de forma clara
-        const entradaConflicto = desde.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const salidaConflicto = hasta.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-        // Mensaje personalizado detallando los días que ya están alquilados
-        alert(`Lo sentimos, esas fechas no están disponibles porque la casa rural ya está alquilada del ${entradaConflicto} al ${salidaConflicto}. Por favor, prueba con otras fechas.`);
-
-        // Vaciamos los campos para que vuelva a elegir correctamente
-        document.getElementById('fechaEntrada').value = '';
-        document.getElementById('fechaSalida').value = '';
-        return;
-      }
-    }
-  }
 
   // ── Comprobar disponibilidad ──
   async function comprobarDisponibilidad() {
     const entrada = document.getElementById('fechaEntrada').value;
     const salida  = document.getElementById('fechaSalida').value;
+    const alojamientoId = document.getElementById('alojamientoSeleccionado').value;
     const result  = document.getElementById('disponResult');
 
+    if (!alojamientoId) {
+      result.style.display = 'block';
+      result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> Selecciona un alojamiento.</span>';
+      return;
+    }
     if (!entrada || !salida) {
       result.style.display = 'block';
       result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-circle"></i> Por favor selecciona las fechas de entrada y salida.</span>';
@@ -1000,42 +988,15 @@
     result.innerHTML = '<span style="color:var(--gris)"><i class="fas fa-spinner fa-spin"></i> Comprobando...</span>';
 
     try {
-      const res = await fetchConToken(`${API}/reservas/disponibilidad?alojamientoId=1&entrada=${entrada}&salida=${salida}`);
+      const res = await fetchConToken(`${API}/reservas/disponibilidad?alojamientoId=${alojamientoId}&entrada=${entrada}&salida=${salida}`);
       const disponible = await res.json();
 
       if (disponible) {
-        result.innerHTML = `<span class="disponible"><i class="fas fa-check-circle"></i> ¡Hay disponibilidad para esas fechas! <a href="reservas.html?entrada=${entrada}&salida=${salida}" style="color:var(--verde-med);margin-left:.5rem">Reservar ahora →</a></span>`;
+        result.innerHTML = `<span class="disponible"><i class="fas fa-check-circle"></i> ¡Hay disponibilidad para esas fechas! <a href="reservas.html?id=${alojamientoId}&entrada=${entrada}&salida=${salida}" style="color:var(--verde-med);margin-left:.5rem">Reservar ahora →</a></span>`;
         return;
       }
 
-      // No disponible — buscar con qué reservas se solapa
-      const inicioSel = new Date(entrada);
-      const finSel    = new Date(salida);
-      let conflictos  = [];
-
-      if (window.fechasBloqueadas) {
-        conflictos = window.fechasBloqueadas.filter(r => {
-          const desde = new Date(r.fechaEntrada);
-          const hasta = new Date(r.fechaSalida);
-          return inicioSel < hasta && finSel > desde;
-        });
-      }
-
-      if (conflictos.length > 0) {
-        const lista = conflictos.map(r => {
-          const desde = new Date(r.fechaEntrada).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
-          const hasta = new Date(r.fechaSalida).toLocaleDateString('es-ES',  { day: '2-digit', month: 'long', year: 'numeric' });
-          return `<li style="margin-top:.3rem"><i class="fas fa-lock" style="margin-right:.4rem"></i>Del <strong>${desde}</strong> al <strong>${hasta}</strong></li>`;
-        }).join('');
-
-        result.innerHTML = `
-        <span class="no-disponible">
-          <i class="fas fa-times-circle"></i> Esas fechas no están disponibles. La casa ya está reservada en los siguientes periodos:
-          <ul style="margin:.5rem 0 0 1.2rem;line-height:1.8">${lista}</ul>
-        </span>`;
-      } else {
-        result.innerHTML = `<span class="no-disponible"><i class="fas fa-times-circle"></i> Esas fechas no están disponibles. Prueba con otras fechas.</span>`;
-      }
+      result.innerHTML = `<span class="no-disponible"><i class="fas fa-times-circle"></i> Esas fechas no están disponibles. Prueba con otras fechas.</span>`;
 
     } catch(e) {
       result.innerHTML = '<span class="no-disponible"><i class="fas fa-exclamation-triangle"></i> No se pudo conectar con el servidor.</span>';
@@ -1091,14 +1052,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     // El index es 100% público, cargamos las reseñas y las fechas ocupadas
     cargarResenas();
-    cargarFechasOcupadas();
-
-    // Escuchamos los cambios en AMBOS inputs para validar el rango completo de la reserva
-    const inputEntrada = document.getElementById('fechaEntrada');
-    const inputSalida = document.getElementById('fechaSalida');
-
-    if (inputEntrada) inputEntrada.addEventListener('change', verificarFechaBloqueada);
-    if (inputSalida) inputSalida.addEventListener('change', verificarFechaBloqueada);
   });
 </script>
 

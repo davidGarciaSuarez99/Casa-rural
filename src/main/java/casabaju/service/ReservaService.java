@@ -30,9 +30,19 @@ public class ReservaService {
         return reservaRepository.findByEstado(estado);
     }
 
-    // Comprobar disponibilidad antes de reservar
+    private static final Long ID_CASA_COMPLETA = 1L;
+
     public boolean estaDisponible(Long alojamientoId, LocalDate entrada, LocalDate salida) {
-        return !reservaRepository.existeSolapamiento(alojamientoId, entrada, salida);
+        // Si se quiere reservar la Casa Completa, no puede haber NINGUNA reserva activa
+        if (alojamientoId.equals(ID_CASA_COMPLETA)) {
+            return !reservaRepository.existeCualquierSolapamiento(entrada, salida);
+        }
+
+        // Si se quiere reservar una habitación, no puede estar ocupada NI la Casa Completa
+        boolean habitacionOcupada = reservaRepository.existeSolapamiento(alojamientoId, entrada, salida);
+        boolean casaCompletaOcupada = reservaRepository.existeSolapamiento(ID_CASA_COMPLETA, entrada, salida);
+
+        return !habitacionOcupada && !casaCompletaOcupada;
     }
 
     // Crear una nueva reserva
