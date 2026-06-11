@@ -444,6 +444,14 @@
       msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Por favor rellena todos los campos, selecciona una estancia y una puntuación.';
       return;
     }
+    const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+    if (!pattern.test(email)){
+      msg.className = 'form-msg error';
+      msg.style.display = 'block';
+      msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> El correo no es válido.';
+      return;
+    }
+
 
     const body = {
       puntuacion:  estrellaSeleccionada,

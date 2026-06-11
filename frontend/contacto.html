@@ -265,6 +265,15 @@
             return;
         }
 
+
+        const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+        if (!pattern.test(email)){
+            msg.className = 'form-msg error';
+            msg.style.display = 'block';
+            msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> El correo no es válido.';
+            return;
+        }
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
@@ -275,6 +284,13 @@
             asunto:   document.getElementById('asunto').value,
             mensaje
         };
+        const regex = /^(\+\d{1,3}[- ]?)?\d{7,15}$/;
+        if(!regex.test(body.telefono)){
+            msg.className = 'form-msg error';
+            msg.style.display = 'block';
+            msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> El numero de telefono no es válido.';
+            return;
+        }
 
         try {
             const res = await fetchConToken(`${API}/contacto`, {

@@ -326,6 +326,18 @@ async function hacerRegistro() {
     return;
   }
 
+  const regex = /^(\+\d{1,3}[- ]?)?\d{7,15}$/;
+  if(!regex.test(telefono)){
+    mostrarMsg(msg, 'error', 'El numero de telefono no es valido.');
+    return;
+  }
+
+  const pattern=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+  if (!pattern.test(email)){
+    mostrarMsg(msg, 'error', 'el correo no es valido.');
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando cuenta...';
 
