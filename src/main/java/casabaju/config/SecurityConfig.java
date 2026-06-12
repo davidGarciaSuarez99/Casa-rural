@@ -91,18 +91,38 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
+        // Orígenes permitidos: los puertos donde corre el frontend.
+        // 63342 es el puerto de IntelliJ al abrir HTML directamente,
+        // 5500 es el puerto de Live Server (extensión de VS Code).
+        // Sin esto, el navegador bloquearía todas las peticiones al backend.
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:63342",
                 "http://127.0.0.1:63342",
                 "http://localhost:5500",
                 "http://127.0.0.1:5500"
         ));
+
+        // Métodos HTTP que se permiten desde el frontend.
+        // OPTIONS es obligatorio porque el navegador lo manda primero
+        // como "preflight" para comprobar si tiene permiso antes de la petición real.
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Cabeceras que el frontend puede enviar en sus peticiones.
+        // Authorization es la que lleva el token JWT (Bearer xxx).
+        // Content-Type indica que mandamos JSON.
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+
+        // Cabeceras que el frontend puede leer de la respuesta del servidor.
+        // Necesario para que el JS pueda acceder al token si el servidor lo devuelve en cabecera.
         configuration.setExposedHeaders(List.of("Authorization"));
 
+        // Permite que las peticiones incluyan credenciales (cookies, tokens).
+        // Necesario para que el token JWT funcione correctamente.
         configuration.setAllowCredentials(true);
 
+        // Aplica esta configuración CORS a todas las rutas de la API (/**)
+        // y la registra en Spring para que se use automáticamente.
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
