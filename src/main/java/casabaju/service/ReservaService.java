@@ -32,20 +32,27 @@ public class ReservaService {
 
     private static final Long ID_CASA_COMPLETA = 1L;
 
+
+    // Comprueba si un alojamiento está disponible en un rango de fechas.
+    // Tiene lógica especial: si se quiere reservar la Casa Completa (id=1),
+    // no puede haber ninguna otra reserva activa esos días (ni habitaciones sueltas).
+    // Si se quiere una habitación, tampoco puede estar ocupada la Casa Completa.
     public boolean estaDisponible(Long alojamientoId, LocalDate entrada, LocalDate salida) {
         // Si se quiere reservar la Casa Completa, no puede haber NINGUNA reserva activa
         if (alojamientoId.equals(ID_CASA_COMPLETA)) {
             return !reservaRepository.existeCualquierSolapamiento(entrada, salida);
         }
 
-        // Si se quiere reservar una habitación, no puede estar ocupada NI la Casa Completa
+        // Si se quiere reservar una habitación, no puede estar ocupada la Casa Completa
         boolean habitacionOcupada = reservaRepository.existeSolapamiento(alojamientoId, entrada, salida);
         boolean casaCompletaOcupada = reservaRepository.existeSolapamiento(ID_CASA_COMPLETA, entrada, salida);
 
         return !habitacionOcupada && !casaCompletaOcupada;
     }
 
-    // Crear una nueva reserva
+    // Guarda una nueva reserva en la base de datos.
+    // Antes de guardarla, llama a estaDisponible() para asegurarse de que no hay conflicto.
+    // Si no hay disponibilidad, lanza un error con un mensaje claro
     public Reserva crear(Reserva reserva) {
         // Verificar disponibilidad antes de guardar
         if (!estaDisponible(reserva.getAlojamiento().getId(),

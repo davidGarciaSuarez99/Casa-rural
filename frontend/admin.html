@@ -436,6 +436,8 @@
     let calFecha = new Date();
 
     // ── NAVEGACIÓN ──
+    // Cambia la sección visible del panel (Dashboard, Reservas, Calendario, etc.)
+    // y carga los datos correspondientes a esa sección.
     function mostrarSeccion(nombre, el) {
         document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('activo'));
@@ -454,6 +456,9 @@
     }
 
     // ── DASHBOARD ──
+    // Carga los contadores del dashboard: total de reservas, pendientes,
+    // mensajes sin leer y reseñas pendientes. Cada llamada es independiente
+    // para que un fallo no afecte a las demás.
     async function cargarDashboard() {
         // Valores por defecto a 0 antes de cargar
         ['statTotalReservas','statPendientes','statMensajes','statResenas'].forEach(id => {
@@ -498,6 +503,8 @@
     }
 
     // ── RESERVAS ──
+    // Obtiene todas las reservas del servidor y las muestra en la tabla.
+    // Acepta un filtro opcional para mostrar solo las de un estado concreto.
     async function cargarReservas(estado = '') {
         try {
             const token = localStorage.getItem('token');
@@ -518,6 +525,9 @@
 
     function filtrarEstado(estado) { cargarReservas(estado); }
 
+
+    // Construye las filas HTML de la tabla de reservas.
+    // Si se pasan acciones=true, añade los botones de Confirmar/Completar/Cancelar.
     function renderTablaReservas(tbodyId, lista, acciones) {
         const tbody = document.getElementById(tbodyId);
         if (!lista.length) {
@@ -543,6 +553,8 @@
   `).join('');
     }
 
+
+    // Llama a la API para cambiar el estado de una reserva y recarga la tabla.
     async function cambiarEstado(id, estado) {
         if (!confirm(`¿Cambiar el estado de la reserva #${id} a ${estado}?`)) return;
         try {
@@ -553,6 +565,8 @@
     }
 
     // ── CALENDARIO ──
+    // Dibuja el calendario del mes actual con las reservas activas marcadas.
+    // Los días ocupados aparecen con fondo rojo y muestran el nombre del alojamiento.
     function renderCalendario() {
         const año = calFecha.getFullYear();
         const mes = calFecha.getMonth();
@@ -588,12 +602,14 @@
         }
     }
 
+    // Avanza o retrocede un mes en el calendario.
     function cambiarMes(dir) {
         calFecha.setMonth(calFecha.getMonth() + dir);
         renderCalendario();
     }
 
     // ── RESEÑAS ──
+    // Carga las reseñas pendientes de aprobación y las muestra como tarjetas.
     async function cargarResenas() {
         try {
             const res = await fetchConToken(`${API}/resenas/pendientes`);
@@ -643,6 +659,8 @@
     }
 
     // ── MENSAJES ──
+    // Carga todos los mensajes de contacto y los muestra.
+    // Los no leídos tienen un indicador azul.
     let mensajesData = [];
 
 
@@ -685,6 +703,7 @@
     }
 
     // ── USUARIOS ──
+    // Carga la lista de usuarios registrados y la muestra en la tabla.
     async function cargarUsuarios() {
         try {
             const res = await fetchConToken(`${API}/auth/usuarios`);
@@ -751,6 +770,8 @@
         window.location.href = 'login.html';
     }
     // ── LÓGICA DEL MODAL DE RESPUESTA ──
+    // Abre el modal de respuesta con los datos del mensaje seleccionado
+    // (rellenando el destinatario y el asunto automáticamente).
     function abrirRespuesta(id) {
         // Buscamos los datos completos del mensaje usando el ID
         const msg = mensajesData.find(m => m.id === id);
@@ -770,6 +791,7 @@
         document.getElementById('modalRespuesta').style.display = 'none';
     }
 
+    // Envía la respuesta por email a través de la API y cierra el modal.
     async function enviarRespuesta() {
         const id = document.getElementById('replyMsgId').value;
         const email = document.getElementById('replyEmail').textContent;

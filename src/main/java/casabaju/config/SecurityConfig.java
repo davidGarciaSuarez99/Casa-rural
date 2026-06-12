@@ -29,6 +29,23 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+
+    // Define qué rutas son públicas y cuáles requieren autenticación o rol de admin.
+    //
+    // ZONA PÚBLICA (sin login):
+    //   - Ver alojamientos, comprobar disponibilidad, login, registro,
+    //     enviar mensaje de contacto y ver reseñas aprobadas.
+    //
+    // SOLO ADMIN:
+    //   - Ver todos los usuarios, mensajes de contacto y marcarlos como leídos/respondidos.
+    //
+    // USUARIOS LOGUEADOS:
+    //   - Crear y consultar reservas, crear reseñas.
+    //
+    // También configura CORS para permitir peticiones desde el frontend
+    // (localhost:63342 y localhost:5500, los puertos típicos de IntelliJ y Live Server).
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

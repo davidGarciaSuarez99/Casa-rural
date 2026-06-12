@@ -29,7 +29,9 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // POST /api/auth/login → iniciar sesión
+    // POST /api/auth/login
+    // Recibe email y contraseña, comprueba que el usuario existe y está activo,
+    // verifica la contraseña y devuelve un token JWT junto con los datos del usuario.
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String email    = body.get("email");
@@ -64,7 +66,9 @@ public class AuthController {
         ));
     }
 
-    // POST /api/auth/registro → registrar nuevo usuario
+    // POST /api/auth/registro
+    // Recibe los datos del nuevo usuario, llama al servicio para registrarlo
+    // (que se encarga de encriptar la contraseña) y devuelve el usuario creado.
     @PostMapping("/registro")
     public ResponseEntity<?> registro(@RequestBody Usuario usuario) {
         try {
@@ -76,6 +80,8 @@ public class AuthController {
         }
     }
 
+    // GET /api/auth/usuarios
+    // Devuelve la lista completa de usuarios. Solo accesible para administradores.
     @GetMapping("/usuarios")
     public ResponseEntity<?> obtenerUsuarios() {
         return ResponseEntity.ok(usuarioRepository.findAll());

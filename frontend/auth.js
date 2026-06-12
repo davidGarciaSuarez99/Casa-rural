@@ -22,7 +22,9 @@ const AUTH = {
         return localStorage.getItem('rol') === 'ADMIN';
     },
 
-    // Cerrar sesión
+
+    // Borra todos los datos de sesión del localStorage.
+    // Si redirigir=true, manda al usuario a la página de login.
     cerrarSesion(redirigir = true) {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
@@ -35,14 +37,14 @@ const AUTH = {
         }
     },
 
-    // Proteger página — redirige al login si no hay sesión
+    // Protege una página: si el usuario no está logueado, lo redirige al login.
     requerirLogin() {
         if (!this.estaLogueado()) {
             window.location.href = 'login.html';
         }
     },
 
-    // Proteger página — redirige al login si no es admin
+    // Protege una página solo para admins: si no es admin, lo manda al login.
     requerirAdmin() {
         if (!this.estaLogueado() || !this.esAdmin()) {
             window.location.href = 'login.html';
@@ -50,7 +52,9 @@ const AUTH = {
     }
 };
 
-// ── fetchConToken — Intercepta respuestas 401/403 y redirige al login ──
+// Versión mejorada de fetch() que añade automáticamente el token JWT en las cabeceras.
+// Si el servidor responde con 401 o 403 (sin permisos), cierra la sesión.
+// En la página principal no redirige para no molestar a usuarios no logueados.
 async function fetchConToken(url, opciones = {}) {
     const token = AUTH.getToken();
 

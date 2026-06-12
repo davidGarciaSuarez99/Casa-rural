@@ -25,6 +25,13 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+
+
+    // Este filtro se ejecuta en cada petición que llega al servidor.
+    // Si la petición trae un token en la cabecera Authorization (formato "Bearer xxx"),
+    // lo valida y extrae el email y el rol del usuario para que Spring Security
+    // sepa quién está haciendo la petición y qué permisos tiene.
+    // Si no hay token o es inválido, la petición continúa sin usuario autenticado.
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

@@ -458,6 +458,9 @@ let alojamientoSeleccionado = null;
 let serviciosSeleccionados = [];
 
 // ── Cargar alojamientos ──
+// Carga los alojamientos desde la API y los muestra como tarjetas seleccionables.
+// Si hay parámetros en la URL (id, entrada, salida), preselecciona el alojamiento
+// y rellena las fechas automáticamente.
 async function cargarAlojamientos() {
   const iconos = ['fa-home', 'fa-door-open', 'fa-bed'];
   try {
@@ -518,6 +521,9 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarFechasBloqueadas();
 });
 
+
+// Marca el alojamiento seleccionado visualmente y lo guarda en memoria
+// para usarlo al calcular el precio y enviar la reserva.
 function seleccionarAlojamiento(el, aloj) {
   document.querySelectorAll('.aloj-card').forEach(c => c.classList.remove('seleccionado'));
   el.classList.add('seleccionado');
@@ -544,7 +550,8 @@ function cargarServicios() {
     </div>
   `).join('');
 }
-
+// Activa o desactiva un servicio extra (desayuno, barbacoa, cuna).
+// Actualiza el precio total en el resumen lateral.
 function toggleServicio(el, id, precio) {
   el.classList.toggle('checked');
   if (el.classList.contains('checked')) {
@@ -600,6 +607,8 @@ function aplicarFechasBloqueadasAlCalendario() {
 }
 
 // Actualiza comprobarDisponibilidad para mostrar el conflicto exacto
+// Consulta a la API si el alojamiento seleccionado está disponible
+// en las fechas elegidas y muestra el resultado al usuario.
 async function comprobarDisponibilidad() {
   const entrada = document.getElementById('fechaEntrada').value;
   const salida  = document.getElementById('fechaSalida').value;
@@ -648,6 +657,8 @@ async function comprobarDisponibilidad() {
 }
 
 // ── Resumen lateral ──
+// Recalcula y actualiza el resumen lateral con el alojamiento,
+// fechas, número de noches y precio total (alojamiento + servicios extra).
 function actualizarResumen() {
   const entrada = document.getElementById('fechaEntrada')?.value;
   const salida  = document.getElementById('fechaSalida')?.value;
@@ -733,6 +744,8 @@ function cambiarPaso(de, a) {
 }
 
 // ── Validación ──
+// Comprueba que todos los campos obligatorios están rellenos antes de continuar.
+// Muestra los mensajes de error correspondientes si falta algo.
 function validarFormulario() {
   let ok = true;
   const campos = [
@@ -759,6 +772,8 @@ function validarFormulario() {
 }
 
 // ── Enviar reserva a la API ──
+// Recoge todos los datos del formulario, calcula el precio final
+// y envía la reserva al servidor. Si todo va bien, pasa al paso 3 (confirmación).
 async function enviarReserva() {
   const entrada    = document.getElementById('fechaEntrada').value;
   const salida     = document.getElementById('fechaSalida').value;

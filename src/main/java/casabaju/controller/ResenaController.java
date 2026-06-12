@@ -17,20 +17,23 @@ public class ResenaController {
     @Autowired
     private ResenaService resenaService;
 
-    // GET /api/resenas → reseñas aprobadas (web pública)
+    // GET /api/resenas
+    // Devuelve solo las reseñas aprobadas por el admin. Son las que se muestran en la web pública.
     @GetMapping
     public List<Resena> obtenerAprobadas() {
         return resenaService.obtenerAprobadas();
     }
 
-    // GET /api/resenas/pendientes → reseñas pendientes (admin)
+    // GET /api/resenas/pendientes
+    // Devuelve las reseñas que están esperando ser revisadas por el administrador.
     @GetMapping("/pendientes")
     public List<Resena> obtenerPendientes() {
         return resenaService.obtenerPendientes();
     }
 
-    // POST /api/resenas → crear nueva reseña
-    // ResenaController.java
+    // POST /api/resenas
+    // Crea una nueva reseña vinculada a una reserva completada.
+    // Si ya existe una reseña para esa reserva, devuelve un error 409.
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody Resena resena) {
         try {
@@ -40,13 +43,16 @@ public class ResenaController {
         }
     }
 
-    // PUT /api/resenas/1/aprobar → aprobar reseña (admin)
+
+    // PUT /api/resenas/{id}/aprobar
+    // El administrador aprueba una reseña para que sea visible en la web pública.
     @PutMapping("/{id}/aprobar")
     public ResponseEntity<Resena> aprobar(@PathVariable Long id) {
         return ResponseEntity.ok(resenaService.aprobar(id));
     }
 
-    // DELETE /api/resenas/1 → eliminar reseña (admin)
+    // DELETE /api/resenas/{id}
+    // Elimina una reseña definitivamente de la base de datos. Solo para administradores.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         resenaService.eliminar(id);

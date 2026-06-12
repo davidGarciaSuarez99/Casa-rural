@@ -18,7 +18,8 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // Generar un token para un usuario
+    // Genera un token JWT firmado con la clave secreta.
+    // El token incluye el email del usuario, su rol y tiene una validez de 24 horas.
     public String generarToken(String email, String rol) {
         return Jwts.builder()
                 .setSubject(email)
@@ -29,7 +30,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Obtener el email del token
+    // Extrae el email del usuario que está guardado dentro del token.
     public String obtenerEmail(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getKey())
@@ -39,7 +40,7 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    // Obtener el rol del token
+    // Extrae el rol del usuario (CLIENTE o ADMIN) guardado dentro del token.
     public String obtenerRol(String token) {
         return (String) Jwts.parserBuilder()
                 .setSigningKey(getKey())
@@ -49,7 +50,8 @@ public class JwtUtil {
                 .get("rol");
     }
 
-    // Validar si el token es correcto
+    // Comprueba que el token es válido: que no ha expirado y que la firma es correcta.
+    // Devuelve true si es válido, false si ha caducado o está manipulado.
     public boolean validarToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token);

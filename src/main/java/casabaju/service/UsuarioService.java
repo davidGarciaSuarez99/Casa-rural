@@ -18,7 +18,9 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Registrar un nuevo usuario
+    // Registra un nuevo usuario.
+    // Comprueba que el email no esté ya en uso, encripta la contraseña con BCrypt,
+    // asigna el rol CLIENTE por defecto y guarda el usuario en la base de datos.
     public Usuario registrar(Usuario usuario) {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             throw new RuntimeException("Ya existe una cuenta con ese email");

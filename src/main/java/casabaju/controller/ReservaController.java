@@ -19,14 +19,16 @@ public class ReservaController {
     @Autowired
     private ReservaService reservaService;
 
-    // GET /api/reservas → todas las reservas (admin)
+    // GET /api/reservas
+    // Devuelve todas las reservas del sistema. Pensado para el panel de administración.
     @GetMapping
     public List<Reserva> obtenerTodas() {
         System.out.println("Obteniendo reservas");
         return reservaService.obtenerTodas();
     }
 
-    // GET /api/reservas/1 → reserva por ID
+    // GET /api/reservas/{id}
+    // Devuelve una reserva concreta por su ID.
     @GetMapping("/{id}")
     public ResponseEntity<Reserva> obtenerPorId(@PathVariable Long id) {
         return reservaService.obtenerPorId(id)
@@ -34,13 +36,17 @@ public class ReservaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // GET /api/reservas/usuario/1 → reservas de un usuario
+    // GET /api/reservas/usuario/{usuarioId}
+    // Devuelve todas las reservas de un usuario específico.
+    // Se usa en "Mis reservas" del cliente.
     @GetMapping("/usuario/{usuarioId}")
     public List<Reserva> obtenerPorUsuario(@PathVariable Long usuarioId) {
         return reservaService.obtenerPorUsuario(usuarioId);
     }
 
-    // GET /api/reservas/disponibilidad?alojamientoId=1&entrada=2025-07-01&salida=2025-07-05
+    // GET /api/reservas/disponibilidad?alojamientoId=1&entrada=...&salida=...
+    // Comprueba si un alojamiento está libre en el rango de fechas indicado.
+    // Devuelve true o false.
     @GetMapping("/disponibilidad")
     public ResponseEntity<Boolean> comprobarDisponibilidad(
             @RequestParam Long alojamientoId,
@@ -50,7 +56,9 @@ public class ReservaController {
         return ResponseEntity.ok(disponible);
     }
 
-    // POST /api/reservas → crear nueva reserva
+    // POST /api/reservas
+    // Crea una nueva reserva. Primero comprueba disponibilidad y, si hay hueco,
+    // guarda la reserva con estado PENDIENTE.
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody Map<String, Object> body) {
         try {
@@ -78,14 +86,17 @@ public class ReservaController {
         }
     }
 
-    // PUT /api/reservas/1/estado → cambiar estado (admin)
+    // PUT /api/reservas/{id}/estado
+    // Cambia el estado de una reserva (PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA).
+    // Solo para administradores.
     @PutMapping("/{id}/estado")
     public ResponseEntity<Reserva> cambiarEstado(@PathVariable Long id,
                                                   @RequestParam Reserva.Estado estado) {
         return ResponseEntity.ok(reservaService.cambiarEstado(id, estado));
     }
 
-    // DELETE /api/reservas/1 → cancelar reserva
+    // DELETE /api/reservas/{id}
+    // Cancela una reserva cambiando su estado a CANCELADA. No la borra de la base de datos.
     @DeleteMapping("/{id}")
     public ResponseEntity<Reserva> cancelar(@PathVariable Long id) {
         return ResponseEntity.ok(reservaService.cancelar(id));

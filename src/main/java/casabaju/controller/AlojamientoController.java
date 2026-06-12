@@ -16,13 +16,15 @@ public class AlojamientoController {
     @Autowired
     private AlojamientoService alojamientoService;
 
-    // GET /api/alojamientos → lista todos los alojamientos activos
+    // GET /api/alojamientos
+    // Devuelve todos los alojamientos que están activos (no desactivados por el admin).
     @GetMapping
     public List<Alojamiento> obtenerTodos() {
         return alojamientoService.obtenerTodos();
     }
 
-    // GET /api/alojamientos/1 → obtiene un alojamiento por ID
+    // GET /api/alojamientos/{id}
+    // Busca un alojamiento concreto por su ID. Si no existe, devuelve un 404.
     @GetMapping("/{id}")
     public ResponseEntity<Alojamiento> obtenerPorId(@PathVariable Long id) {
         return alojamientoService.obtenerPorId(id)
@@ -30,19 +32,23 @@ public class AlojamientoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // GET /api/alojamientos/buscar?personas=4 → filtra por capacidad
+
+    // GET /api/alojamientos/buscar?personas=4
+    // Filtra los alojamientos activos que tengan capacidad para el número de personas indicado.
     @GetMapping("/buscar")
     public List<Alojamiento> buscarPorCapacidad(@RequestParam Integer personas) {
         return alojamientoService.buscarPorCapacidad(personas);
     }
 
-    // POST /api/alojamientos → crea un nuevo alojamiento (solo admin)
+    // POST /api/alojamientos
+    // Crea un nuevo alojamiento con los datos recibidos. Solo para administradores.
     @PostMapping
     public Alojamiento crear(@RequestBody Alojamiento alojamiento) {
         return alojamientoService.guardar(alojamiento);
     }
 
-    // PUT /api/alojamientos/1 → actualiza un alojamiento (solo admin)
+    // PUT /api/alojamientos/{id}
+    // Actualiza los datos de un alojamiento existente. Si no existe, devuelve 404.
     @PutMapping("/{id}")
     public ResponseEntity<Alojamiento> actualizar(@PathVariable Long id,
                                                    @RequestBody Alojamiento alojamiento) {
@@ -52,7 +58,9 @@ public class AlojamientoController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/alojamientos/1 → desactiva un alojamiento (solo admin)
+    // DELETE /api/alojamientos/{id}
+    // No borra el alojamiento de la base de datos, solo lo marca como inactivo
+    // para que deje de aparecer en la web.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivar(@PathVariable Long id) {
         alojamientoService.desactivar(id);

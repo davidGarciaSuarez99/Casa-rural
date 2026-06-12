@@ -321,6 +321,7 @@
   let filtroActual = 0;
   const resenasEjemplo = [];
 
+  // Carga las reseñas aprobadas desde la API y las guarda para poder filtrarlas.
   async function cargarResenas() {
     try {
       const res = await fetchConToken(`${API}/resenas`);
@@ -340,6 +341,9 @@
   }
 
   // ── Carga las reservas COMPLETADAS del usuario para el selector ──
+  // Busca las reservas del usuario logueado que estén en estado COMPLETADA
+  // y las carga en el desplegable del formulario.
+  // Si no tiene ninguna, oculta el formulario y muestra un aviso.
   async function cargarReservasCompletadas() {
     const userId = localStorage.getItem('userId');
     const select = document.getElementById('selectReserva');
@@ -371,6 +375,9 @@
     }
   }
 
+
+  // Dibuja las tarjetas de reseñas en la pantalla.
+  // Muestra las estrellas, el comentario, el nombre del autor y la fecha.
   function renderResenas(lista) {
     const grid = document.getElementById('resenasGrid');
     if (lista.length === 0) {
@@ -401,6 +408,7 @@
     }).join('');
   }
 
+  // Filtra las reseñas mostradas según la puntuación elegida (todas, 5★, 4★, etc.).
   function filtrar(btn, estrellas) {
     document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
     btn.classList.add('activo');
@@ -408,7 +416,7 @@
     const filtradas = estrellas === 0 ? todasResenas : todasResenas.filter(r => r.puntuacion === estrellas);
     renderResenas(filtradas);
   }
-
+  // Calcula y muestra la puntuación media y el total de reseñas en la cabecera.
   function actualizarEstadisticas() {
     if (todasResenas.length === 0) return;
     const media = todasResenas.reduce((s, r) => s + r.puntuacion, 0) / todasResenas.length;
@@ -431,6 +439,9 @@
     });
   });
 
+  // Recoge los datos del formulario, valida que esté todo relleno
+  // (incluyendo la puntuación y la estancia seleccionada) y envía la reseña a la API.
+  // Si ya existe una reseña para esa reserva, muestra un error 409.
   async function enviarResena() {
     const nombre      = document.getElementById('rNombre').value.trim();
     const email       = document.getElementById('rEmail').value.trim();

@@ -22,31 +22,39 @@ public class ContactoController {
     @Autowired
     private JavaMailSender mailSender;
 
-    // POST /api/contacto → enviar mensaje desde el formulario
+    // POST /api/contacto
+    // Guarda un mensaje nuevo enviado desde el formulario de contacto de la web.
     @PostMapping
     public ResponseEntity<ContactoMensaje> enviar(@RequestBody ContactoMensaje mensaje) {
         return ResponseEntity.ok(contactoService.guardar(mensaje));
     }
 
-    // GET /api/contacto → todos los mensajes (admin)
+    // GET /api/contacto
+    // Devuelve todos los mensajes de contacto. Solo para el panel de administración.
     @GetMapping
     public List<ContactoMensaje> obtenerTodos() {
         return contactoService.obtenerTodos();
     }
 
-    // GET /api/contacto/noleidos → mensajes sin leer (admin)
+    // GET /api/contacto/noleidos
+    // Devuelve solo los mensajes que aún no han sido leídos por el administrador.
+    // Se usa para mostrar el badge de notificaciones en el panel.
     @GetMapping("/noleidos")
     public List<ContactoMensaje> obtenerNoLeidos() {
         return contactoService.obtenerNoLeidos();
     }
 
-    // PUT /api/contacto/1/leido → marcar como leído (admin)
+    // PUT /api/contacto/{id}/leido
+    // Marca un mensaje como leído en la base de datos.
     @PutMapping("/{id}/leido")
     public ResponseEntity<ContactoMensaje> marcarLeido(@PathVariable Long id) {
         return ResponseEntity.ok(contactoService.marcarLeido(id));
     }
 
-    // ── NUEVO ENDPOINT: Enviar la respuesta por correo electrónico ──
+    // PUT /api/contacto/{id}/responder
+    // Busca el mensaje original, obtiene el email del cliente y le envía
+    // un correo real con el asunto y texto escritos por el admin en el panel.
+    // Después marca el mensaje como leído automáticamente.
     @PutMapping("/{id}/responder")
     public ResponseEntity<?> responderMensaje(@PathVariable Long id, @RequestBody RespuestaRequest request) {
         try {
